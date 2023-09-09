@@ -17,3 +17,6 @@ Either:
 
 1. Run .py scripts in a virtual environment with the required packages installed
 2. Use Anaconda with a "CS550HO" environment with the required packages installed (I am currently using this)
+
+### Documentation for assignments:
+Every assignment will have a PDF documentation file that accompanies it, to interpret the documentation file, refer to the "documentation_guide"
