@@ -5,7 +5,7 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 ### This repository follows the Honor Code!
 
-On my honor, I have not given nor received any unauthorized aid all code and documentation on this repository.
+**_On my honor, I have not given nor received any unauthorized aid all code and documentation on this repository._**
 
 *Before every coding assignment, I will include the honor code above the code like this:*
 
