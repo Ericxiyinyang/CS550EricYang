@@ -21,5 +21,7 @@ GPT should be cited as a source
 Description like above but reference the AI tool
 
 Before each part that you got help on, comment!
+<------------------- Start of borrowed code ------------------->
+<------------------- End of borrowed code ------------------->
 """
 
