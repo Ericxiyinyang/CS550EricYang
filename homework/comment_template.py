@@ -19,5 +19,7 @@ I looked up how to use the random module on: w3schools.com/python/module_random.
 
 GPT should be cited as a source
 Description like above but reference the AI tool
+
+Before each part that you got help on, comment!
 """
 
