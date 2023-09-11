@@ -11,5 +11,6 @@ Notes on Sources
 If no source, still say so!
 If you used a person, say so!
 If you used a website, say so! Except for Python.org
+GPT should be cited as a source
 """
 
