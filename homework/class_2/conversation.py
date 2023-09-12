@@ -22,6 +22,7 @@ On my honor, I have neither given nor received unauthorized aid on this assignme
 import random
 from art import tprint
 from textblob import TextBlob
+import time
 
 
 class Greeter:
@@ -81,6 +82,7 @@ if __name__ == "__main__":
         print("No way! I'm from Vancouver too!")
     else:
         print("Nice to know!")
+    time.sleep(2)
     print("I'm going to ask you some random questions now!")
     while True:
         main_greeter.interaction()
