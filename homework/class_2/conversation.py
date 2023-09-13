@@ -106,23 +106,23 @@ class Greeter:
                     break
             previous_x = pos_x
             previous_y = pos_y
-            direction = input("1. up, 2. down, 3. right, 4. left\n>>>")
-            if direction == '1':
+            direction = input("w. up, s. down, d. right, a. left\n>>>")
+            if direction == 'w':
                 if pos_y == 0:
                     print("Can't move up anymore! choose another direction")
                 else:
                     pos_y -= 1
-            elif direction == '2':
+            elif direction == 's':
                 if pos_y == 9:
                     print("Can't move down anymore! choose another direction")
                 else:
                     pos_y += 1
-            elif direction == '3':
+            elif direction == 'd':
                 if pos_x == 9:
                     print("Can't move right anymore! choose another direction")
                 else:
                     pos_x += 1
-            elif direction == '4':
+            elif direction == 'a':
                 if pos_x == 0:
                     print("Can't move left anymore! choose another direction")
                 else:
