@@ -82,6 +82,9 @@ class Greeter:
         immunity = 0
         continue_game = True
         while continue_game is True:
+            # for i in range(len(sweep_board)):
+            #     for j in range(len(sweep_board[i])):
+            #         print(sweep_board[i][j])
             if sweep_board[pos_y][pos_x] == 0 or pos_y == previous_y and pos_x == previous_x:
                 print("You've stepped on safe grounds!")
             elif sweep_board[pos_y][pos_x] == 1:
@@ -151,7 +154,7 @@ class Greeter:
 
     def give_joke(self):
         # we need an index number to get the joke ans so we cant just use random.choice()
-        random_joke_index = random.randint(0, len(self.random_jokes))
+        random_joke_index = random.randint(0, len(self.random_jokes)-1)
         print(self.random_jokes[random_joke_index])
         time.sleep(0.8)
         print("Think you got the answer? Press enter to see!")
