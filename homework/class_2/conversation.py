@@ -82,9 +82,13 @@ class Greeter:
         immunity = 0
         continue_game = True
         while continue_game is True:
-            # for i in range(len(sweep_board)):
-            #     for j in range(len(sweep_board[i])):
-            #         print(sweep_board[i][j])
+            for i in range(len(sweep_board)):
+                for j in range(len(sweep_board[i])):
+                    if i == pos_y and j == pos_x:
+                        print(sweep_board[i][j], end=" ")
+                    else:
+                        print("█", end=" ")
+                print()
             if sweep_board[pos_y][pos_x] == 0 or pos_y == previous_y and pos_x == previous_x:
                 print("You've stepped on safe grounds!")
             elif sweep_board[pos_y][pos_x] == 1:
