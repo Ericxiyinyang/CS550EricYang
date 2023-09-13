@@ -67,7 +67,8 @@ class Greeter:
             for j in range(len(sweep_board[i])):
                 sweep_board[i][j] = random.randint(0, 2)
 
-        print("Welcome to Ericsweeper, the worst version of minesweeper you can play!\n0 = empty safe spot, 1 = immunity, 2 = landmine")
+        print("Welcome to Ericsweeper, the worst version of minesweeper you can play!")
+        print("0 = empty safe spot, 1 = immunity, 2 = landmine")
         pos_x = random.randint(0, len(sweep_board[1]) - 1)
         pos_y = random.randint(0, len(sweep_board) - 1)
 
