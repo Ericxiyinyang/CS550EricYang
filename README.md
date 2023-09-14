@@ -6,7 +6,9 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 # Projects so far:
 ## [Conversation w/ EricSweeper](homework/class_2/conversation.py)
+### [Documentation](homework/class_2/conversationpydoc.pdf)
 ![Ericsweeper](Ericsweeper.png)
+
 
 ### This repository follows the Honor Code!
 
