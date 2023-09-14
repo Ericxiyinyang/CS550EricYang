@@ -4,6 +4,10 @@
 
 This is a repository for my work in the course *CS550HO,* and it includes jupyter notebooks for notes, sample scripts, and homework/documentation.
 
+### Projects so far:
+## Conversation w/ EricSweeper
+![Ericsweeper](Ericsweeper.png)
+
 ### This repository follows the Honor Code!
 
 **_On my honor, I have not given nor received any unauthorized aid all code and documentation on this repository._**
