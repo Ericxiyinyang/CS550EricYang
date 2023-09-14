@@ -43,7 +43,7 @@ class Greeter:
                              "What do you call a cow with no legs?",
                              "What do you call a cow with two legs?",
                              "What do you call a cow with all legs?",
-                             "What do you call a cow that just gave birth?"]
+                             "Wat do you call a cow that just gave birth?"]
         self.random_jokes_ans = ["Impasta!", "An Investigator!", "A Meowtain!", "A Pork Chop!", "Ground Beef!",
                                  "Lean Beef!", "High Steaks!", "De-calf-inated!"]
 
