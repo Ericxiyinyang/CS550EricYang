@@ -12,15 +12,11 @@ each method with a docstring. Overall, fantastic second assignment!
 On my honor, I have neither given nor received unauthorized aid on this assignment.
 """
 
-import math
 import random
 import time
 from rich import print as rprint
-import sys
 import os
-from art import tprint
-from erictools.ezinput import BaseEZInputHandler
-import numpy
+from erictools.ezinput import EZInputHandlerUser
 
 
 class MathHost:

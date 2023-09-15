@@ -1,1 +1,1 @@
-from erictools.ezinput import *
+from ezinput import *

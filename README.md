@@ -6,6 +6,7 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 # Frameworks/Handlers:
 ## [EZ Input](erictools/ezinput.py)
+*Drag the "erictools" folder into your python environment's lib folder to use it throughout the project* 
 ```python
 from erictools.ezinput import BaseEZInputHandler
 ```
