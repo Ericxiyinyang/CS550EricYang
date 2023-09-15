@@ -19,7 +19,7 @@ from rich import print as rprint
 import sys
 import os
 from art import tprint
-
+from erictools.ezinput import BaseEZInputHandler
 import numpy
 
 

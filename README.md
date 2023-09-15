@@ -11,7 +11,7 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 # Frameworks/Handlers To Copy and Use:
 ## [EZ Input](code_samples/ezinput.py)
-### [Using EZ Input](code_samples/easyinputpydoc.pdf)
+`from erictools.ezinput import BaseEZInputHandler`
 ![EasyIn](easyin.png)
 
 

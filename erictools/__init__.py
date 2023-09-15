@@ -1,0 +1,1 @@
+from erictools.ezinput import *
