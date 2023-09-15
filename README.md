@@ -5,7 +5,7 @@
 This is a repository for my work in the course *CS550HO,* and it includes jupyter notebooks for notes, sample scripts, and homework/documentation.
 
 # Frameworks/Handlers:
-## [EZ Input](code_samples/ezinput.py)
+## [EZ Input](erictools/ezinput.py)
 ```python
 from erictools.ezinput import BaseEZInputHandler
 ```
