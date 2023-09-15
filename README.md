@@ -11,7 +11,9 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 # Frameworks/Handlers To Copy and Use:
 ## [EZ Input](code_samples/ezinput.py)
-`from erictools.ezinput import BaseEZInputHandler`
+```python
+from erictools.ezinput import BaseEZInputHandler
+```
 ![EasyIn](easyin.png)
 
 
@@ -21,7 +23,9 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 *Before every coding assignment, I will include the honor code above the code like this:*
 
-`## On my honor I have not given nor received any unauthorized aid on this assignment/exam.`
+```python
+## On my honor I have not given nor received any unauthorized aid on this assignment/exam.
+```
 
 ### To run code in this repository:
 Either:
