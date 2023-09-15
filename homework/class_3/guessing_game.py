@@ -25,6 +25,7 @@ class MathHost:
         self.upper_bound = u_bound
         self.step = step
         self.random_number = 0
+        self.ez_input = EZInputHandlerUser("Eric")
 
     def change_lower_bound(self, new_l_bound):
         '''
