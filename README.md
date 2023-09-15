@@ -9,6 +9,11 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 ### [Documentation](homework/class_2/conversationpydoc.pdf)
 ![Ericsweeper](Ericsweeper_thumb.png)
 
+# Frameworks/Handlers To Copy and Use:
+## [EZ Input](code_samples/ezinput.py)
+### [Using EZ Input](code_samples/easyinputpydoc.pdf)
+![EasyIn](easyin.png)
+
 
 ### This repository follows the Honor Code!
 
