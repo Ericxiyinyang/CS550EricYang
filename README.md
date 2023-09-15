@@ -4,17 +4,17 @@
 
 This is a repository for my work in the course *CS550HO,* and it includes jupyter notebooks for notes, sample scripts, and homework/documentation.
 
-# Projects so far:
-## [Conversation w/ EricSweeper](homework/class_2/conversation.py)
-### [Documentation](homework/class_2/conversationpydoc.pdf)
-![Ericsweeper](media/Ericsweeper_thumb.png)
-
-# Frameworks/Handlers To Copy and Use:
+# Frameworks/Handlers:
 ## [EZ Input](code_samples/ezinput.py)
 ```python
 from erictools.ezinput import BaseEZInputHandler
 ```
 ![EasyIn](media/easyin.png)
+
+# Projects so far:
+## [Conversation w/ EricSweeper](homework/class_2/conversation.py)
+### [Documentation](homework/class_2/conversationpydoc.pdf)
+![Ericsweeper](media/Ericsweeper_thumb.png)
 
 
 ### This repository follows the Honor Code!
