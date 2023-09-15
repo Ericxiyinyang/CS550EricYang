@@ -1,5 +1,5 @@
 ## *DO NOT take code directly from this repository!*
-![CS550ClassBanner](CS550Banner.png)
+![CS550ClassBanner](media/CS550Banner.png)
 #### Doing so is a violation of Academic Integrity
 
 This is a repository for my work in the course *CS550HO,* and it includes jupyter notebooks for notes, sample scripts, and homework/documentation.
@@ -7,14 +7,14 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 # Projects so far:
 ## [Conversation w/ EricSweeper](homework/class_2/conversation.py)
 ### [Documentation](homework/class_2/conversationpydoc.pdf)
-![Ericsweeper](Ericsweeper_thumb.png)
+![Ericsweeper](media/Ericsweeper_thumb.png)
 
 # Frameworks/Handlers To Copy and Use:
 ## [EZ Input](code_samples/ezinput.py)
 ```python
 from erictools.ezinput import BaseEZInputHandler
 ```
-![EasyIn](easyin.png)
+![EasyIn](media/easyin.png)
 
 
 ### This repository follows the Honor Code!
