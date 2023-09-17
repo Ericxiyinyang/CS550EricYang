@@ -6,11 +6,11 @@ This is a repository for my work in the course *CS550HO,* and it includes jupyte
 
 # Frameworks/Handlers:
 ## [EZ Input](erictools/ezinput.py)
+![EasyIn](media/easyin.png)
 *Drag the "erictools" folder into your python environment's lib folder to use it throughout the project* 
 ```python
-from erictools.ezinput import BaseEZInputHandler
+from erictools.ezinput import EZInputHandlerBase
 ```
-![EasyIn](media/easyin.png)
 
 # Projects so far:
 ## [Conversation w/ EricSweeper](homework/class_2/conversation.py)
