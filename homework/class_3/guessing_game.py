@@ -3,6 +3,8 @@ Eric
 September 14th, 2023
 Sources:
 I used the rich text library to style terminal output - https://rich.readthedocs.io/en/latest/introduction.html
+I copied some code from my Markov Chain music model research project to save high scores to a pickle file
+I built (and technically "used") the ezinput library to handle user input
 
 Reflection:
 I think this was a nice assignment to review basic control flow and python ints. I took this opportunity to learn how to
