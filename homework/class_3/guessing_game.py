@@ -16,7 +16,8 @@ import random
 import time
 from rich import print as rprint
 import os
-from erictools.ezinput import EZInputHandlerUser
+from erictools.ezinput import EZInputHandlerBase
+import pickle
 
 
 class MathHost:
@@ -25,7 +26,8 @@ class MathHost:
         self.upper_bound = u_bound
         self.step = step
         self.random_number = 0
-        self.ez_input = EZInputHandlerUser("Eric")
+        self.ez_input = EZInputHandlerBase()
+        self.player_name = ""
 
     def change_lower_bound(self, new_l_bound):
         '''
@@ -56,55 +58,106 @@ class MathHost:
         This function generates a random number between the lower and upper bounds
         :return: Nothing
         '''
-        return random.randrange(self.lower_bound, self.upper_bound, self.step)
+        try:
+            return int(random.randrange(self.lower_bound, self.upper_bound, self.step))
+        except ValueError:
+            rprint("[bright_red]Invalid bounds, please try again.[/bright_red]")
+            time.sleep(0.5)
+            self.configure_bounds()
+
+    def configure_bounds(self):
+        os.system('clear')
+        self.change_lower_bound(self.ez_input.handle_int_input("What number do you want to start at?"))
+        self.change_upper_bound(self.ez_input.handle_int_input("What number do you want to end at?"))
+        self.change_step(self.ez_input.handle_int_input("What number do you want to increment by?"))
+
+    def configure_player(self):
+        os.system('clear')
+        rprint("[bright_white]What is your name?[/bright_white]")
+        self.player_name = input(">>>")
+        rprint(f"[bright_white]Ok, {self.player_name}, let's get started![/bright_white]")
+        time.sleep(0.5)
+
+    def add_new_score(self, score):
+        # <--------This was ripped & modified from my Markov Chain music model research project-------->
+        with open('guess_game_highscores.pkl', 'rb') as f:
+            scores = pickle.load(f)
+        new_score_entry = {"name": self.player_name, "score": score}
+        scores.append(new_score_entry)
+        scores.sort(key=lambda x: x["score"], reverse=True)
+        with open('guess_game_highscores.pkl', 'wb') as f:
+            pickle.dump(scores, f)
 
     def play_game(self):
         '''
         This function is the main game loop
         :return: Nothing
         '''
-        os.system('clear')
-        rprint("[bright_white]What number do you want to start at?[/bright_white]")
-        self.change_lower_bound(int(input(">>>")))
-        rprint("[bright_white]What number do you want to end at?[/bright_white]")
-        self.change_upper_bound(int(input(">>>")))
-        rprint("[bright_white]What number do you want to increment by?[/bright_white]")
-        self.change_step(int(input(">>>")))
+        self.configure_player()
+        self.configure_bounds()
+        score = 0
         time.sleep(0.5)
-        rprint("[bright_magenta]Ok! Let's start the game[/bright_magenta]")
-        time.sleep(0.5)
-        os.system('clear')
-        self.random_number = self.generate_random_number()
-        rprint("[bright_white]I'm thinking of a number between " + str(self.lower_bound) + " and " + str(self.upper_bound) + "[/bright_white]")
-        time.sleep(0.5)
-        for i in range(4):
-            if i == 3:
-                rprint("[bright_white]The number was " + str(self.random_number) + "[/bright_white]")
-                time.sleep(0.5)
-                rprint("[bright_white]Unfortunately, you didn't guess the number![/bright_white]")
-                break
-            elif i == 2:
-                rprint("[bright_blue]You have 1 guess left![/bright_blue]")
-            guess = int(input("Enter your guess\n>>>"))
-            if self.check_answer(guess):
-                rprint("[bright_green]Correct![/bright_green]")
-                time.sleep(0.5)
-                rprint("[bright_green]You win![/bright_green]")
-                time.sleep(0.5)
-                break
-            else:
-                if guess > self.random_number:
-                    rprint("[bright_red]Too high![/bright_red]")
-                    time.sleep(0.5)
-                else:
-                    rprint("[bright_red]Too low![/bright_red]")
-                    time.sleep(0.5)
-        play_again = input("Do you want to play again? (y/n)\n>>>")
-        if play_again.lower().strip() == 'y':
+        first_round_guesses = 20
+        game_lost = False
+        game_lost, guesses_used = self.single_round(first_round_guesses)
+        while game_lost is False:
+            score += 1
+            print(f"You currently have {score} points.")
+            time.sleep(3)
+            game_lost, guesses_used = self.single_round(guesses_used)
+        print(f"Game over! You scored {score} points!")
+        self.add_new_score(int(round((score * (self.upper_bound - self.lower_bound)) / 2)))
+        print("Do you want to play again?")
+        play_again = self.ez_input.handle_bool_input()
+        if play_again:
             self.play_game()
         else:
             rprint("[bright_white]Ok, thanks for playing![/bright_white]")
 
+    def single_round(self, guesses):
+        self.random_number = self.generate_random_number()
+        rprint("[bright_magenta]Ok! Let's start the game[/bright_magenta]")
+        time.sleep(0.5)
+        os.system('clear')
+        rprint("[bright_white]I'm thinking of a number between " + str(self.lower_bound) + " and " + str(
+            self.upper_bound) + "[/bright_white]")
+        time.sleep(0.5)
+        for i in range(guesses):
+            if i == guesses - 1:
+                rprint("[bright_white]The number was " + str(self.random_number) + "[/bright_white]")
+                time.sleep(0.5)
+                rprint("[bright_white]Unfortunately, you didn't guess the number![/bright_white]")
+                return True, i + 1
+            elif i == guesses - 2:
+                rprint("[bright_blue]You have 1 guess left![/bright_blue]")
+            else:
+                rprint("[bright_blue]You have " + str(guesses - i) + " guesses left![/bright_blue]")
+            play_game = self.ask_guess(i)
+            if play_game is not None:
+                return play_game
+            # try:
+            #     self.ask_guess(i)
+            # except TypeError:
+            #     rprint("[bright_red]Invalid input, please try again.[/bright_red]")
+            #     time.sleep(0.5)
+            #     self.ask_guess(i)
+
+    def ask_guess(self, i):
+        guess = self.ez_input.handle_int_input("Enter your guess:")
+        print("got past guess handler")
+        if self.check_answer(guess):
+            rprint("[bright_green]Correct![/bright_green]")
+            time.sleep(0.5)
+            rprint("[bright_green]You win![/bright_green]")
+            time.sleep(0.5)
+            return False, i + 1
+        else:
+            if guess > self.random_number:
+                rprint("[bright_red]Too high![/bright_red]")
+                time.sleep(0.5)
+            else:
+                rprint("[bright_red]Too low![/bright_red]")
+                time.sleep(0.5)
     def check_answer(self, answer):
         '''
         This function checks if the user's answer is correct
@@ -158,15 +211,33 @@ class MathHost:
         print()
         time.sleep(0.1)
         rprint("[bold bright_green]Correct![/bold bright_green]")
+        time.sleep(1)
         print("If you guess the number correctly, you win!")
         time.sleep(2)
+        os.system('clear')
+        rprint("[bright_magenta]You will be given 20 guesses to guess the number correctly initially.[/bright_magenta]")
         print()
-        rprint("[bright_magenta]You will be given 3 guesses to guess the number correctly.[/bright_magenta]")
+        time.sleep(2)
+        rprint("[bright_magenta]Next round, you must guess the number in less rounds[/bright_magenta]")
         print()
+        time.sleep(2)
+        rprint("[bright_magenta]You will be allowed less and less guesses[/bright_magenta]")
+        print()
+        time.sleep(2)
+        rprint("[bright_magenta]Your final score will be calculated with: correct_rounds * interval / increment[/bright_magenta]")
+        print()
+        time.sleep(2)
+        rprint("[bright_magenta]Basically, your score will be higher the wider your range & smaller the increment[/bright_magenta]")
+        print()
+        time.sleep(3)
+        with open('guess_game_highscores.pkl', 'rb') as f:
+            highscores = pickle.load(f)
+        print(f"{highscores[0]['name']} has the highest score of {highscores[0]['score']}!")
         time.sleep(1)
-        ready_to_start = input("Are you ready to play? (y/n)\n>>>")
+        print("Are you ready to play?")
+        ready_to_start = self.ez_input.handle_bool_input()
         time.sleep(0.3)
-        if ready_to_start.lower().strip() == 'y':
+        if ready_to_start:
             self.play_game()
         else:
             print("Ok, let's go through the instructions again.")
@@ -177,4 +248,3 @@ class MathHost:
 if __name__ == "__main__":
     problem_host = MathHost(0, 100, 1)
     problem_host.introduce_game()
-
