@@ -5,8 +5,9 @@
 This is a repository for my work in the course *CS550HO,* and it includes jupyter notebooks for notes, sample scripts, and homework/documentation.
 
 # Frameworks/Handlers:
-## [EZ Input](erictools/ezinput.py)
+## [EZ Input: Avoid Errors With Input](erictools/ezinput.py)
 ![EasyIn](media/easyin.png)
+Avoid errors with input by using this input handler, it will return a string, int, or float depending on the input.
 *Drag the "erictools" folder into your python environment's lib folder to use it throughout the project* 
 ```python
 from erictools.ezinput import EZInputHandlerBase
