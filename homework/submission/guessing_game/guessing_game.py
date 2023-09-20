@@ -231,9 +231,9 @@ class MathHost:
                 rprint("[bright_white]Unfortunately, you didn't guess the number![/bright_white]")
                 return True, i + 1
             elif i == guesses - 2:
-                rprint("[bright_blue]You have 1 guess left![/bright_blue]")
+                rprint("[bright_magenta]You have 1 guess left![/bright_magenta]")
             else:
-                rprint("[bright_blue]You have " + str(guesses - i - 1) + " guesses left![/bright_blue]")
+                rprint("[bright_magenta]You have " + str(guesses - i - 1) + " guesses left![/bright_magenta]")
             play_game = self.ask_guess(i)
             if play_game is not None:
                 return play_game
