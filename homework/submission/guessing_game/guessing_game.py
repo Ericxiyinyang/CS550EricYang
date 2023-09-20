@@ -151,9 +151,9 @@ class MathHost:
         :return: Nothing
         '''
         os.system('clear')
-        self.change_lower_bound(self.ez_input.handle_int_input("What number do you want to start at?"))
-        self.change_upper_bound(self.ez_input.handle_int_input("What number do you want to end at?"))
-        self.change_step(self.ez_input.handle_int_input("What number do you want to increment by?"))
+        self.change_lower_bound(self.ez_input.handle_int_input("(YOU ARE SETTING THE RANGE) What number do you want to start at?"))
+        self.change_upper_bound(self.ez_input.handle_int_input("(YOU ARE SETTING THE RANGE) What number do you want to end at?"))
+        self.change_step(self.ez_input.handle_int_input("What do you want to increment by? (ie. 1 = 1, 2, 3, 4, 5)"))
 
     def configure_player(self):
         '''
@@ -188,7 +188,7 @@ class MathHost:
         first_round_guesses = 20
         game_lost = False
         # play a single 20 round to set guess limit
-        game_lost, guesses_used = self.single_round(first_round_guesses)
+        game_lost, guesses_used = self.single_round(first_round_guesses + 1)
         one_add = 0
         # gameplay loop
         while game_lost is False:

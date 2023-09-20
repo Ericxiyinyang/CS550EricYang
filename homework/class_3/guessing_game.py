@@ -1,15 +1,26 @@
 """
 Eric
 September 14th, 2023
+
+pip install rich before using this program
 Sources:
 I used the rich text library to style terminal output - https://rich.readthedocs.io/en/latest/introduction.html
 I copied some code from my Markov Chain music model research project to save high scores to a pickle file
 I built (and technically "used") the ezinput library to handle user input
 
+*THIS VERSION HAS THE EZINPUT LIBRARY IN THE SAME SCRIPT*
+
 Reflection:
-I think this was a nice assignment to review basic control flow and python ints. I took this opportunity to learn how to
-present my python program's better with the rich text library. I also improved my in-code documentation by documenting
-each method with a docstring. Overall, fantastic second assignment!
+Since most of the game mechanics were implemented in the previous version, I decided to take this opportunity to
+handle inputs better. I created a package called ezinput that handles all user input(basically try/except, it's shipped
+at the top of this Canvas version of the game. I also added a high score system,
+but you can't see it on the Canvas version because it's commented out (The GitHub version has it, because you need to
+download a pkl file to store the data). I also implemented the "bonus" mechanic, which limits how many guesses
+the user has based on their previous number of guesses. Since the range and step mechanics were already implemented
+I decided to calculate the scores via a math function that rewards players for choosing a wider range, and smaller
+increments. Overall a fantastic assignment!
+
+Have a good day! :)
 
 On my honor, I have neither given nor received unauthorized aid on this assignment.
 """
@@ -22,6 +33,8 @@ from erictools.ezinput import EZInputHandlerBase
 import pickle
 
 
+
+# MathHost object to host each game. each function is documented with a docstring
 class MathHost:
     def __init__(self, l_bound, u_bound, step):
         self.lower_bound = l_bound
@@ -30,7 +43,6 @@ class MathHost:
         self.random_number = 0
         self.ez_input = EZInputHandlerBase()
         self.player_name = ""
-
     def change_lower_bound(self, new_l_bound):
         '''
         This function changes the lower bound of the random number generator
@@ -60,35 +72,45 @@ class MathHost:
         This function generates a random number between the lower and upper bounds
         :return: Nothing
         '''
-        try:
-            return int(random.randrange(self.lower_bound, self.upper_bound, self.step))
-        except ValueError:
-            rprint("[bright_red]Invalid bounds, please try again.[/bright_red]")
-            time.sleep(0.5)
-            self.configure_bounds()
+        while True:
+            try:
+                return int(random.randrange(self.lower_bound, self.upper_bound, self.step))
+            except ValueError:
+                rprint("[bright_red]Invalid bounds, please try again.[/bright_red]")
+                time.sleep(0.5)
+                self.configure_bounds()
+                return self.generate_random_number()
 
     def configure_bounds(self):
+        '''
+        This function configures the bounds of the random number generator
+        :return: Nothing
+        '''
         os.system('clear')
-        self.change_lower_bound(self.ez_input.handle_int_input("What number do you want to start at?"))
-        self.change_upper_bound(self.ez_input.handle_int_input("What number do you want to end at?"))
-        self.change_step(self.ez_input.handle_int_input("What number do you want to increment by?"))
+        self.change_lower_bound(self.ez_input.handle_int_input("(YOU ARE SETTING THE RANGE) What number do you want to start at?"))
+        self.change_upper_bound(self.ez_input.handle_int_input("(YOU ARE SETTING THE RANGE) What number do you want to end at?"))
+        self.change_step(self.ez_input.handle_int_input("What do you want to increment by? (ie. 1 = 1, 2, 3, 4, 5)"))
 
     def configure_player(self):
+        '''
+        This function configures the player's name
+        :return: Nothing
+        '''
         os.system('clear')
         rprint("[bright_white]What is your name?[/bright_white]")
         self.player_name = input(">>>")
         rprint(f"[bright_white]Ok, {self.player_name}, let's get started![/bright_white]")
         time.sleep(0.5)
 
-    def add_new_score(self, score):
-        # <--------This was ripped & modified from my Markov Chain music model research project-------->
-        with open('guess_game_highscores.pkl', 'rb') as f:
-            scores = pickle.load(f)
-        new_score_entry = {"name": self.player_name, "score": score}
-        scores.append(new_score_entry)
-        scores.sort(key=lambda x: x["score"], reverse=True)
-        with open('guess_game_highscores.pkl', 'wb') as f:
-            pickle.dump(scores, f)
+    # def add_new_score(self, score):
+    #     # <--------This was ripped & modified from my Markov Chain music model research project-------->
+    #     with open('guess_game_highscores.pkl', 'rb') as f:
+    #         scores = pickle.load(f)
+    #     new_score_entry = {"name": self.player_name, "score": score}
+    #     scores.append(new_score_entry)
+    #     scores.sort(key=lambda x: x["score"], reverse=True)
+    #     with open('guess_game_highscores.pkl', 'wb') as f:
+    #         pickle.dump(scores, f)
 
     def play_game(self):
         '''
@@ -101,22 +123,35 @@ class MathHost:
         time.sleep(0.5)
         first_round_guesses = 20
         game_lost = False
-        game_lost, guesses_used = self.single_round(first_round_guesses)
+        # play a single 20 round to set guess limit
+        game_lost, guesses_used = self.single_round(first_round_guesses + 1)
+        one_add = 0
+        # gameplay loop
         while game_lost is False:
             score += 1
-            print(f"You currently have {score} points.")
-            time.sleep(3)
+            print(f"You currently have {(score * (self.upper_bound - self.lower_bound))} points.")
+            time.sleep(2)
             game_lost, guesses_used = self.single_round(guesses_used)
-        print(f"Game over! You scored {score} points!")
-        self.add_new_score(int(round((score * (self.upper_bound - self.lower_bound)) / 2)))
+
+        # this will run after you lost the game
+        print(f"Game over! You scored {(score * (self.upper_bound - self.lower_bound))} points!")
+        # self.add_new_score(int(round((score * (self.upper_bound - self.lower_bound)) / 2)))
         print("Do you want to play again?")
         play_again = self.ez_input.handle_bool_input()
         if play_again:
             self.play_game()
         else:
             rprint("[bright_white]Ok, thanks for playing![/bright_white]")
+            time.sleep(0.5)
+            os.system('clear')
 
     def single_round(self, guesses):
+        '''
+        This function runs a single round of the game
+        :param guesses: The number of guesses the user has
+        :return: True if the user lost, False if the user won
+        '''
+        # generate random number and setup individual round
         self.random_number = self.generate_random_number()
         rprint("[bright_magenta]Ok! Let's start the game[/bright_magenta]")
         time.sleep(0.5)
@@ -124,6 +159,7 @@ class MathHost:
         rprint("[bright_white]I'm thinking of a number between " + str(self.lower_bound) + " and " + str(
             self.upper_bound) + "[/bright_white]")
         time.sleep(0.5)
+        # run guess rounds for ith times (AKA the number of guesses the user has this time calculated from before)
         for i in range(guesses):
             if i == guesses - 1:
                 rprint("[bright_white]The number was " + str(self.random_number) + "[/bright_white]")
@@ -133,20 +169,19 @@ class MathHost:
             elif i == guesses - 2:
                 rprint("[bright_blue]You have 1 guess left![/bright_blue]")
             else:
-                rprint("[bright_blue]You have " + str(guesses - i) + " guesses left![/bright_blue]")
+                rprint("[bright_blue]You have " + str(guesses - i - 1) + " guesses left![/bright_blue]")
             play_game = self.ask_guess(i)
             if play_game is not None:
                 return play_game
-            # try:
-            #     self.ask_guess(i)
-            # except TypeError:
-            #     rprint("[bright_red]Invalid input, please try again.[/bright_red]")
-            #     time.sleep(0.5)
-            #     self.ask_guess(i)
 
     def ask_guess(self, i):
+        '''
+        This function asks the user for their guess
+        :param i: The number of guesses the user has used
+        :return: Nothing if the user lost, False & ith guess if the user won
+        '''
         guess = self.ez_input.handle_int_input("Enter your guess:")
-        print("got past guess handler")
+        # print("got past guess handler")
         if self.check_answer(guess):
             rprint("[bright_green]Correct![/bright_green]")
             time.sleep(0.5)
@@ -160,6 +195,7 @@ class MathHost:
             else:
                 rprint("[bright_red]Too low![/bright_red]")
                 time.sleep(0.5)
+
     def check_answer(self, answer):
         '''
         This function checks if the user's answer is correct
@@ -226,16 +262,18 @@ class MathHost:
         rprint("[bright_magenta]You will be allowed less and less guesses[/bright_magenta]")
         print()
         time.sleep(2)
-        rprint("[bright_magenta]Your final score will be calculated with: correct_rounds * interval / increment[/bright_magenta]")
+        rprint(
+            "[bright_magenta]Your final score will be calculated with: correct_rounds * interval / increment[/bright_magenta]")
         print()
         time.sleep(2)
-        rprint("[bright_magenta]Basically, your score will be higher the wider your range & smaller the increment[/bright_magenta]")
+        rprint(
+            "[bright_magenta]Basically, your score will be higher the wider your range & smaller the increment[/bright_magenta]")
         print()
         time.sleep(3)
-        with open('guess_game_highscores.pkl', 'rb') as f:
-            highscores = pickle.load(f)
-        print(f"{highscores[0]['name']} has the highest score of {highscores[0]['score']}!")
-        time.sleep(1)
+        # with open('guess_game_highscores.pkl', 'rb') as f:
+        #     highscores = pickle.load(f)
+        # print(f"{highscores[0]['name']} has the highest score of {highscores[0]['score']}!")
+        # time.sleep(1)
         print("Are you ready to play?")
         ready_to_start = self.ez_input.handle_bool_input()
         time.sleep(0.3)
