@@ -1,17 +1,36 @@
 '''
+Eric
+September 25, 2021
+
+Sources:
 Used ChatGPT for game and rough mechanics idea, although it tried to generate this for a space-themed game.
 Used OpenAI company name to make game name
 Used ASCII conversion library for display terminal visuals - https://pypi.org/project/image-to-Ascii/
-Used Rich text library to style terminal output -
 Also used raw color codes for terminal output, the class I used is documented in the code - https://stackoverflow.com/questions/287871/how-do-i-print-colored-text-to-the-terminal
 Used "Ericsweeper" that I built previously and modified it to be a "system manipulation" game
-
-
 I learned about std.flush() from a stackoverflow post a long time ago, but I thought I'd still cite it here - https://stackoverflow.com/questions/20302331/typing-effect-in-python
 
-To really make sure users are paying attention & understanding the rules, I implemented quiz questions throughout
-the introduction of the game.
+Reflection:
+In this adventure game project, I wanted to create a game that is replayable and random everytime someone plays
+it. Because this is a game played in the terminal, I thought it'd be a good idea to make a game related to hacking
+since you (literally) do it in terminal. I initially worked on the map generation function that uses a 2d numpy
+array to simulate a basic cube map with randomly placed game objects. Then I built another basic helper package to
+simulate a player object which I used inheritance to build on top of for this project. I really wanted this to
+be runnable without too many pip imports, so I decided to ditch rich for text and use raw color codes in the
+terminal. To really make sure users are paying attention & understanding the rules, I implemented quiz questions throughout
+the introduction of the game. Most elements in this game are randomly generated, so it's a different experience
+everytime. The peer feedback process for this game was really critical, a common feedback I received for version 1
+was that the game was too difficult/long. I took this feedback and made the game a lot easier to beat as well as making
+an "Evaluation" version of the game that is rigged for testing purposes. As always, I used docstrings to document methods
+and classes, and I also used comments to explain my code. I also used a lot of helper methods to make my code more readable.
+This game uses the same EZInput package I built previously which handles all input related errors with try & except.
+Overall, I really enjoyed this project and I hope you enjoy playing it as well! (An additional note: DRY was
+heavily used during the development of this game, since it is basically a procedural game with little to none
+"programmed/timed" events, DRY was required to make the game operate.)
 
+Have a good day! :)
+
+On my honor, I have neither given nor received unauthorized aid on this assignment.
 '''
 
 import numpy as np
@@ -212,6 +231,13 @@ class HackerPlayer(BasicPlayer):
         self.sys_manipulation_skill = 4
 
     def set_initial_skills(self, dcypt=0, intr=0, sys_manip=0):
+        '''
+        sets initial skills for player
+        :param dcypt: number of decryption scripts
+        :param intr: number of intrusion scripts
+        :param sys_manip: number of system manipulation scripts
+        :return: Nothing
+        '''
         self.decryption_skill = dcypt
         self.intrusion_skill = intr
         self.sys_manipulation_skill = sys_manip
@@ -220,6 +246,12 @@ class HackerPlayer(BasicPlayer):
 # let's define a game master class to handle the game's mechanics
 class GameMaster:
     def __init__(self, player_object: HackerPlayer, skip_intro=False):
+        '''
+        Storing game puzzle data in the init, this isn't the most efficient method since we would really want to store
+        data in a pkl file.
+        :param player_object: Pass in the player object this GM will interact with
+        :param skip_intro: If the game will skip the tutorial
+        '''
         self.skip_intro = skip_intro
         self.version = "0.0.1"
         self.input_handler = EZInputHandlerBase()
@@ -402,6 +434,11 @@ class GameMaster:
         self.sweep_board[rand_row][rand_col] = 2
 
     def show_loading(self, text="Loading..."):
+        '''
+        Shows a loading animation in the terminal
+        :param text: text to show with the loading animation
+        :return: Nothing
+        '''
         spin_speed = 0.1
         duration = 1
         frames_needed = int(duration / spin_speed)
@@ -413,6 +450,13 @@ class GameMaster:
         print()
 
     def typewriter_print(self, phrase, color="bright_white", bolded=False):
+        '''
+        Prints text in a typewriter style using std.flush()
+        :param phrase: What you want to print
+        :param color: color you want it in
+        :param bolded: bolded or no
+        :return: nothing
+        '''
         phrase = f"{phrase}\n"
         if color == "bright_yellow":
             phrase = f"{Bcolors.WARNING}{phrase}{Bcolors.ENDC}"
@@ -428,9 +472,19 @@ class GameMaster:
             time.sleep(0.05)
 
     def clear_screen(self):
+        '''
+        clears terminal screen with multi-os support
+        :return: nothing
+        '''
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def quiz_rules_int(self, question, ans):
+        '''
+        quiz
+        :param question:
+        :param ans:
+        :return:
+        '''
         self.clear_screen()
         self.typewriter_print(question, color="bright_yellow", bolded=True)
         if self.input_handler.handle_int_input("Input your answer here:") == ans:
@@ -444,6 +498,10 @@ class GameMaster:
             return False
 
     def setup_game(self):
+        '''
+        Sets up the game by generating the map and placing the player via numpy array
+        :return: nothing
+        '''
         self.clear_screen()
         if self.skip_intro is False:
             for log, delay in self.logs:
@@ -502,7 +560,11 @@ class GameMaster:
         self.typewriter_print("Alright, lets restart the connection...", color="bright_yellow", bolded=True)
         self.show_loading()
         self.player.set_initial_skills(decryption_assign, intrusion_assign, sys_assign)
+        # <------pre-setup ends here------>
+
         game_stat = self.play_game()
+
+        # <------post-game starts here------>
         if game_stat:
             self.typewriter_print("You did it! You hacked the AI and got the decryption key!", color="bright_yellow",
                                   bolded=True)
@@ -551,19 +613,29 @@ class GameMaster:
             self.clear_screen()
 
     def print_fake_logs(self, logs_in):
+        '''
+        prints fake logs for more realistic terminal connection effects
+        :param logs_in: the logs (list) to print
+        :return: nothing
+        '''
         for log, delay in logs_in:
             print(log)
             time.sleep(delay)
 
     def play_game(self):
+        '''
+        Main game loop that generates floors via floor generation function as well as random decryption keys
+        :return: True if game won, False if game lost
+        '''
         self.clear_screen()
         self.print_fake_logs(self.logs)
         self.show_loading()
         self.clear_screen()
-        for i in range(2):
-            self.server_floors.append(self.generate_floor(with_security=True))
+        # generate first floor without portal
+        self.server_floors.append(self.generate_floor(with_security=True))
+        # generate second floor with portal
         self.server_floors.append(self.generate_floor(with_security=True, with_portal=True))
-        self.decryption_key = random.randint(100, 999)
+        self.decryption_key = random.randint(10, 99)
         game_over = self.play_floor(0)
         while game_over is False:
             self.clear_screen()
@@ -579,6 +651,12 @@ class GameMaster:
         return False
 
     def hack_menu(self):
+        '''
+        fake "hacking program" interface that shows everyround, uses player's board position and type to determine what actions
+        the player will have for the round.
+        :return: "Corrupt" if corrupt server, "Empty" if empty server, "Decrypted" if decrypted server, "Intruded" if intruded server
+        opposite return keywords if task failed.
+        '''
         self.set_current_conditions()
         print(f"{Bcolors.OKGREEN}Hacking tools V1.0.2: West Region build{Bcolors.ENDC}")
         print(
@@ -611,6 +689,14 @@ class GameMaster:
                     break
                 else:
                     print("Invalid action")
+            self.server_floors[self.current_floor][self.current_row][self.current_col] = 0
+            while True:
+                rand_corrupt_row = random.randint(0, 5)
+                rand_corrupt_col = random.randint(0, 5)
+                if self.server_floors[self.current_floor][rand_corrupt_row][rand_corrupt_col] == 0:
+                    self.server_floors[self.current_floor][rand_corrupt_row][rand_corrupt_col] = 1
+                    break
+
             return "Corrupt"
 
         elif self.on_empty:
@@ -756,6 +842,10 @@ class GameMaster:
         # ------------------------------------------------------
 
     def move_player(self):
+        '''
+        Menu to move to another server after, this changes the object's player position data
+        :return: Nothing
+        '''
         self.clear_screen()
         print(
             f"{Bcolors.WARNING}{Bcolors.BOLD}<--------Connected to datacenter 0{self.current_floor + 1} :: Server[row:{self.current_row + 1}, col:{self.current_col + 1}] ::{self.server_ips[self.current_floor - 1]}--------->{Bcolors.ENDC}{Bcolors.ENDC}")
@@ -776,9 +866,9 @@ class GameMaster:
             f"{Bcolors.WARNING}Vulnerabilities left to exploit: {self.decryption_tasks_left} decryption, {self.intrusion_tasks_left} intrusion, {self.sys_manipulation_tasks_left} sys-manipulation{Bcolors.ENDC}")
         print()
         if self.current_row != 0:
-            print("W: Move Forward", end=" ")
+            print("W: Move Up", end=" ")
         if self.current_row != 8:
-            print("S: Move Backward", end=" ")
+            print("S: Move Down", end=" ")
         if self.current_col != 0:
             print("A: Move Left", end=" ")
         if self.current_col != 8:
@@ -803,6 +893,10 @@ class GameMaster:
                 print("Invalid action")
 
     def fake_server_connection(self):
+        '''
+        fake server connection animation
+        :return: nothing, but enjoy the animation i guess :)
+        '''
         print(f"Connecting to server {random.randint(10000, 99999)}...")
         self.show_loading()
         self.print_fake_logs(self.server_connect_logs_BefS)
@@ -820,6 +914,10 @@ class GameMaster:
         print(f"{Bcolors.OKGREEN}##################################{Bcolors.ENDC}")
 
     def play_decryption(self):
+        '''
+        plays decryption activity, pulls question from the object's list of python q & a and checks if the user's answer is correct
+        :return: True if user ans is correct, False if user ans is wrong
+        '''
         decryption_q_index = random.randint(0, len(self.python_questions) - 1)
         decryption_q = self.python_questions[decryption_q_index]
         decryption_ans = self.python_questions_ans[decryption_q_index]
@@ -844,6 +942,10 @@ class GameMaster:
         # return True
 
     def play_intrusion(self):
+        '''
+        plays intrusion activity, pulls question from the object's list of number riddles and checks if the user's answer is correct
+        :return: True if user ans is correct, False if user ans is wrong
+        '''
         intrusion_q_index = random.randint(0, len(self.number_riddles) - 1)
         intrusion_q = self.number_riddles[intrusion_q_index]
         intrusion_ans = self.number_riddles_ans[intrusion_q_index]
@@ -866,6 +968,12 @@ class GameMaster:
         # return True
 
     def play_sys_manip(self):
+        '''
+        Plays system manipulation game, this is a modified version of Ericsweeper where the user will have to find
+        the error "2" in the binary map. This map is randomly generated and the user can choose for the map to be
+        regenerated or not. The user will always be spawned in a random position that is not on a 2.
+        :return: True if user finds the "2", False if user does not find the "2"
+        '''
         self.fake_server_connection()
         time.sleep(1)
         input(
@@ -881,6 +989,11 @@ class GameMaster:
         # return True
 
     def play_terminal(self):
+        '''
+        plays a terminal animation and retrieves the digit of the decryption key from the object's decryption key
+        by converting the int into a string that is index able
+        :return: True indicating the round is over
+        '''
         self.fake_server_connection()
         time.sleep(1)
         input(
@@ -894,6 +1007,10 @@ class GameMaster:
         return True
 
     def play_portal(self):
+        '''
+        plays the final, high-stakes portal game where the user will have to enter the full decryption key
+        :return: True if user won, False if user lost
+        '''
         self.fake_server_connection()
         print(f"{Bcolors.FAIL}##################################{Bcolors.ENDC}")
         print(f"{Bcolors.FAIL}#                                #{Bcolors.ENDC}")
@@ -927,6 +1044,12 @@ class GameMaster:
             return False
 
     def play_floor(self, floor_num):
+        '''
+        plays a floor, this is the main game loop for each floor. It will access the generated floor based on the floor_num
+        input argument
+        :param floor_num: which floor to play
+        :return: True is user died on floor, False if user won floor
+        '''
         floor_death = False
         floor_won = False
         self.current_floor = floor_num
@@ -982,6 +1105,10 @@ class GameMaster:
         return floor_death
 
     def introduce_game(self):
+        '''
+        Introduces the game, this is the first function that is called when the game is run
+        :return: Nothing
+        '''
         self.clear_screen()
         self.typewriter_print("Skip intro?")
         self.skip_intro = self.input_handler.handle_bool_input()
@@ -1033,16 +1160,16 @@ class GameMaster:
                 time.sleep(2)
                 self.typewriter_print(f"To break the wall, you'll need its {Bcolors.BOLD}encryption key{Bcolors.ENDC}.")
                 time.sleep(2)
-                self.typewriter_print("The key is a 3 digit number.", color="bright_yellow", bolded=True)
+                self.typewriter_print("The key is a 2 digit number.", color="bright_yellow", bolded=True)
                 time.sleep(2)
-                if self.quiz_rules_int("How many digits is the encryption key to hack ClosedAI?", 3):
+                if self.quiz_rules_int("How many digits is the encryption key to hack ClosedAI?", 2):
                     break
             while True:
                 self.clear_screen()
                 self.typewriter_print(
                     f"ClosedAI leaves each digit of the {Bcolors.BOLD}encryption key{Bcolors.ENDC} in a random datacenter.")
                 time.sleep(2)
-                self.typewriter_print("The organization has found these 5 datacenters for you")
+                self.typewriter_print("The organization has found these 2 datacenters for you")
                 time.sleep(2)
                 self.clear_screen()
                 self.typewriter_print(
@@ -1056,7 +1183,7 @@ class GameMaster:
                 self.typewriter_print("You probably want to write down what the terminal says", color="bright_red",
                                       bolded=True)
                 time.sleep(2)
-                if self.quiz_rules_int("How many datacenters do you need to hack to fully decrypt the key?", 5):
+                if self.quiz_rules_int("How many datacenters do you need to hack to fully decrypt the key?", 2):
                     break
             self.clear_screen()
             self.typewriter_print("Are you ready to hack?", color="bright_yellow", bolded=True)
@@ -1070,6 +1197,10 @@ class GameMaster:
             self.setup_game()
 
     def set_current_conditions(self):
+        '''
+        Logic loop to set current conditions of the player based on where they stepped on
+        :return:
+        '''
         self.on_corrupt = False
         self.on_security = False
         self.on_empty = False
@@ -1099,47 +1230,53 @@ class GameMaster:
 
     def generate_floor(self, with_security=False, with_portal=False):
         '''
+        Randomly generates a floor based on the input arguments
+        :param with_security: do you want antivirus with that floor?
+        :param with_portal: do you want a portal with that floor?
+        :return: the generated 2d numpy array floor
+        '''
+        '''
         -1 = get a skill/move up down, 0 = empty, 1 = decryption, 2 = intrusion, 3 = manipulation, 4 antivirus,
         5 = terminal (give digit when all auth tasks complete), 6 firewall portal (fifth floor only)
         '''
-        floor_grid = np.zeros((9, 9), dtype=int)
+        floor_grid = np.zeros((6, 6), dtype=int)
         gen_vals = [1, 2, 3]
         for val in gen_vals:
             count = 0
             while count < 3:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
+                rand_row = random.randint(0, 5)
+                rand_col = random.randint(0, 5)
                 if floor_grid[rand_row][rand_col] == 0:
                     floor_grid[rand_row][rand_col] = val
                     count += 1
         skill_add_count = 0
         while skill_add_count < 6:
-            rand_row = random.randint(0, 8)
-            rand_col = random.randint(0, 8)
+            rand_row = random.randint(0, 5)
+            rand_col = random.randint(0, 5)
             if floor_grid[rand_row][rand_col] == 0:
                 floor_grid[rand_row][rand_col] = -1
                 skill_add_count += 1
         if with_security:
             security_count = 0
             while security_count < 5:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
+                rand_row = random.randint(0, 5)
+                rand_col = random.randint(0, 5)
                 if floor_grid[rand_row][rand_col] == 0:
                     floor_grid[rand_row][rand_col] = 4
                     security_count += 1
         if with_portal:
             portal_count = 0
             while portal_count < 1:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
+                rand_row = random.randint(0, 5)
+                rand_col = random.randint(0, 5)
                 if floor_grid[rand_row][rand_col] == 0:
                     floor_grid[rand_row][rand_col] = 6
                     portal_count += 1
         else:
             terminal_count = 0
             while terminal_count < 1:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
+                rand_row = random.randint(0, 5)
+                rand_col = random.randint(0, 5)
                 if floor_grid[rand_row][rand_col] == 0:
                     floor_grid[rand_row][rand_col] = 5
                     terminal_count += 1
@@ -1173,6 +1310,11 @@ class GameMaster:
 
     # <--------Modified Ericsweeper (Binary Debug in this game)---------->
     def play_ericsweeper(self, new_board=False):
+        '''
+        Modified version of Ericsweeper where the user will have to find the error "2" in the binary map.
+        :param new_board: if you want to generate a new board or not
+        :return: True if user has found it within 35 tries, False if user has not found it within 35 tries
+        '''
         self.clear_screen()
         if new_board:
             self.sweep_board = np.zeros((10, 10), int)
@@ -1196,12 +1338,12 @@ class GameMaster:
         previous_x = pos_x
         previous_y = pos_y
         counter = 0
-        while counter < 25:
+        while counter < 35:
             self.clear_screen()
             print("<01001000 01100101 01111001 00100000 01001101 01110011 00101110>")
             print("<00100000 01001000 01100101 01100001 01101100 01100101 01111001>")
             print("Debug the binary by finding error 2's in the board!")
-            print("You have " + str(25 - counter) + " tries left")
+            print("You have " + str(35 - counter) + " tries left")
             for i in range(len(sweep_board)):
                 for j in range(len(sweep_board[i])):
                     if i == pos_y and j == pos_x:
@@ -1267,3 +1409,56 @@ if __name__ == "__main__":
     # test_player = HackerPlayer("Eric")
     # test_game_master = GameMaster(test_player)
     # test_game_master.play_portal()
+
+
+'''
+---------------Peer Review-----------------
+Sebastian Plunkett '25 (Feedback on game mechanics, pre-coding):
+1. For the generation function, make sure to not randomly place all of the game objects but use weights/take specifics
+2. An idea to make the hacking tasks more than just click "yes" and go is to quiz players on python!
+3. I talked through the GamerMaster & Player design with Sebastian and he said it made sense
+
+Revision based on Sebastian's feedback:
+1. I change the generation function to start with an empty grid of zeros and then randomly place game objects
+by a specified amount for each type of object.
+2. I added both a python quiz and also a number riddle for the decryption and intrusion hacking tasks
+3. I moved forward with the GM and Player classes design and it worked out very well in the end
+
+
+Leon Zhang '25 (Feedback on code):
+1. You should style the content more, like adding colors and bolding text, and also making it feel like a more
+"hacking" experience on the terminal
+2. The game is really hard to beat, and it takes really long as of right now
+3. Since this game is pretty instruction heavy, you should do something to help users remember instructions better.
+
+Revision based on Leon's feedback:
+1. I added colors and bolded text to make the game feel more like a "hacking" experience. Additionally, this feedback
+was the reason I made a lot of the "fake" functions that makes your terminal feel like you are actually trying to hack
+something
+2. This was THE MOST received feedback I received on the first version of this game since it had 5 9x9 floors as well as
+strict fail rates for the hacking tasks. I had to tweak the difficulty multiple times until I landed on using 2 6x6 floors
+with loose game lost conditions. This took a lot of testing, but I sped up the testing time by making a "rigged" version
+of the game where the hacks were one click and landed out right next to the player. 
+3. This is what inspired me to quiz players on the instructions in the middle of the tutorial, I actually realized
+that this is pretty similar to what video games do in the tutorial mission since you fail & repeat if you dont understand.
+
+Andy Chin '25 (Feedback on code):
+1. Game takes wayyyy too long, I would recommend making it shorter as well as more forgiving.
+2. Make a version for testing, testing this will be way too long
+
+Revision based on Andy's feedback:
+1. This was the same feedback I received from Leon, I had to make the game shorter and more forgiving.
+2. As you can probably see in the final version of this code, there are several commented sections that I used
+as alternative "rigged" testing code
+
+Tye Chokephaibulkit '24 (playtesting):
+1. So Tye actually played the first, difficult, and long version of this game(tysm). But unfortunately...there was a logic
+error in the code that made it impossible to win. I fixed this error and made the game shorter and easier to win.
+
+Revision based on Tye's feedback:
+This is why you need playtesters for big games...this logic error would have never been found by just myself! Luckily I fixed it
+and quickly tested it with the "rigged" version of the game.
+
+
+
+'''
