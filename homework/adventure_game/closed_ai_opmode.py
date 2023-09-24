@@ -401,6 +401,7 @@ class GameMaster:
         rand_col = random.randint(0, 9)
         self.sweep_board[rand_row][rand_col] = 2
 
+
     def show_loading(self, text="Loading..."):
         spin_speed = 0.1
         duration = 1
@@ -454,8 +455,7 @@ class GameMaster:
             self.typewriter_print("Access Code: *********")
             time.sleep(1)
             self.clear_screen()
-            print(
-                f"{Bcolors.OKGREEN}<--------Connected to datacenter 01 :: {self.server_ips[0]}--------->{Bcolors.ENDC}")
+            print(f"{Bcolors.OKGREEN}<--------Connected to datacenter 01 :: {self.server_ips[0]}--------->{Bcolors.ENDC}")
             time.sleep(2)
             self.typewriter_print("Ok, we're in the first datacenter...let's throw a tester program in first",
                                   color="bright_yellow")
@@ -491,14 +491,14 @@ class GameMaster:
             decryption_assign = self.input_handler.handle_int_input("How many scripts do you want for Decryption?")
             intrusion_assign = self.input_handler.handle_int_input("How many scripts do you want for Intrusion?")
             sys_assign = self.input_handler.handle_int_input("How many scripts do you want for System Manipulation?")
-            # break
+            break
             # ENABLE CODE BELOW WHEn NOT TESTING
-            if decryption_assign + intrusion_assign + sys_assign == 10:
-                break
-            else:
-                self.typewriter_print("Good try, but we caught that! Re-enter your values", color="bright_red",
-                                      bolded=True)
-                time.sleep(2)
+            # if decryption_assign + intrusion_assign + sys_assign == 10:
+            #     break
+            # else:
+            #     self.typewriter_print("Good try, but we caught that! Re-enter your values", color="bright_red",
+            #                           bolded=True)
+            #     time.sleep(2)
         self.typewriter_print("Alright, lets restart the connection...", color="bright_yellow", bolded=True)
         self.show_loading()
         self.player.set_initial_skills(decryption_assign, intrusion_assign, sys_assign)
@@ -585,6 +585,7 @@ class GameMaster:
             f"Decryption: {self.player.decryption_skill} | Intrusion: {self.player.intrusion_skill} | Sys: {self.player.sys_manipulation_skill}")
         print(
             f"{Bcolors.WARNING}Vulnerabilities left to exploit: {self.decryption_tasks_left} decryption, {self.intrusion_tasks_left} intrusion, {self.sys_manipulation_tasks_left} sys-manipulation{Bcolors.ENDC}")
+        time.sleep(1)
         print()
         if self.on_corrupt:
             print("<!!!!!!!Corrupt Server Found!!!!!!!->")
@@ -735,8 +736,7 @@ class GameMaster:
         elif self.on_portal:
             print("<!!!!!!!Target Decryption Portal Found!!!!!!!>")
             time.sleep(1)
-            print(
-                f"{Bcolors.FAIL}{Bcolors.BOLD}>>>Warning: You have ONE try to enter the decryption key<<<{Bcolors.ENDC}{Bcolors.ENDC}")
+            print(f"{Bcolors.FAIL}{Bcolors.BOLD}>>>Warning: You have ONE try to enter the decryption key<<<{Bcolors.ENDC}{Bcolors.ENDC}")
             print("0: Do Nothing, 1: Enter full decryption key to portal")
             while True:
                 action = self.input_handler.handle_int_input("Please enter desired action:")
@@ -759,16 +759,6 @@ class GameMaster:
         self.clear_screen()
         print(
             f"{Bcolors.WARNING}{Bcolors.BOLD}<--------Connected to datacenter 0{self.current_floor + 1} :: Server[row:{self.current_row + 1}, col:{self.current_col + 1}] ::{self.server_ips[self.current_floor - 1]}--------->{Bcolors.ENDC}{Bcolors.ENDC}")
-        for i in range(len(self.server_floors[self.current_floor])):
-            for j in range(len(self.server_floors[self.current_floor][i])):
-                if i == self.current_row and j == self.current_col:
-                    print(f"{Bcolors.WARNING}P{Bcolors.ENDC}", end=" ")
-                elif self.server_floors[self.current_floor][i][j] != 0:
-                    print(f"{Bcolors.FAIL}█{Bcolors.ENDC}", end=" ")
-                else:
-                    print(f"{Bcolors.OKGREEN}█{Bcolors.ENDC}", end=" ")
-            print()
-        print()
         print(f"{Bcolors.OKGREEN}Hacking tools V1.0.2: West Region build{Bcolors.ENDC}")
         print(
             f"Decryption: {self.player.decryption_skill} | Intrusion: {self.player.intrusion_skill} | Sys: {self.player.sys_manipulation_skill}")
@@ -820,66 +810,63 @@ class GameMaster:
         print(f"{Bcolors.OKGREEN}##################################{Bcolors.ENDC}")
 
     def play_decryption(self):
-        decryption_q_index = random.randint(0, len(self.python_questions) - 1)
-        decryption_q = self.python_questions[decryption_q_index]
-        decryption_ans = self.python_questions_ans[decryption_q_index]
-        self.fake_server_connection()
-        time.sleep(2)
-        input(
-            f"{Bcolors.WARNING}{Bcolors.BOLD}>>Server: Press enter to start password recovery{Bcolors.ENDC}{Bcolors.ENDC}")
-        self.typewriter_print("Password recovery initiated...", color="bright_red", bolded=True)
-        self.typewriter_print(f"Enter previous server password: (hint, it's python code) {decryption_q}",
-                              color="bright_yellow")
-        user_ans = self.input_handler.handle_string_input("Insert password (python code) below")
-        if user_ans.replace("'", '"') == decryption_ans or user_ans.replace('"', "'") == decryption_ans:
-            self.typewriter_print("Password recovery successful!", color="bright_green", bolded=True)
-            time.sleep(2)
-            return True
-        else:
-            self.typewriter_print("Password recovery failed! Disconnecting from threat!", color="bright_red",
-                                  bolded=True)
-            time.sleep(2)
+        # decryption_q_index = random.randint(0, len(self.python_questions) - 1)
+        # decryption_q = self.python_questions[decryption_q_index]
+        # decryption_ans = self.python_questions_ans[decryption_q_index]
+        # self.fake_server_connection()
+        # time.sleep(2)
+        # input(
+        #     f"{Bcolors.WARNING}{Bcolors.BOLD}>>Server: Press enter to start password recovery{Bcolors.ENDC}{Bcolors.ENDC}")
+        # self.typewriter_print("Password recovery initiated...", color="bright_red", bolded=True)
+        # self.typewriter_print(f"Enter previous server password: (hint, it's python code) {decryption_q}", color="bright_yellow")
+        # user_ans = self.input_handler.handle_string_input("Insert password (python code) below")
+        # if user_ans.replace("'", '"') == decryption_ans or user_ans.replace('"', "'") == decryption_ans:
+        #     self.typewriter_print("Password recovery successful!", color="bright_green", bolded=True)
+        #     time.sleep(2)
+        #     return True
+        # else:
+        #     self.typewriter_print("Password recovery failed! Disconnecting from threat!", color="bright_red", bolded=True)
+        #     time.sleep(2)
         #     return False
         # <-------Testing Code------->
-        # return True
+        return True
 
     def play_intrusion(self):
-        intrusion_q_index = random.randint(0, len(self.number_riddles) - 1)
-        intrusion_q = self.number_riddles[intrusion_q_index]
-        intrusion_ans = self.number_riddles_ans[intrusion_q_index]
-        self.fake_server_connection()
-        time.sleep(2)
-        input(
-            f"{Bcolors.WARNING}{Bcolors.BOLD}>>Server: Press enter to authenticate{Bcolors.ENDC}{Bcolors.ENDC}")
-        self.typewriter_print(f"{intrusion_q}", color="bright_yellow")
-        user_ans = self.input_handler.handle_int_input("Insert integer 2-factor authentication below")
-        if user_ans == intrusion_ans:
-            self.typewriter_print("Access Granted!", color="bright_green", bolded=True)
-            time.sleep(2)
-            return True
-        else:
-            self.typewriter_print("Failed to verify identity!", color="bright_red",
-                                  bolded=True)
-            time.sleep(2)
-            return False
+        # intrusion_q_index = random.randint(0, len(self.number_riddles) - 1)
+        # intrusion_q = self.number_riddles[intrusion_q_index]
+        # intrusion_ans = self.number_riddles_ans[intrusion_q_index]
+        # self.fake_server_connection()
+        # time.sleep(2)
+        # input(
+        #     f"{Bcolors.WARNING}{Bcolors.BOLD}>>Server: Press enter to authenticate{Bcolors.ENDC}{Bcolors.ENDC}")
+        # self.typewriter_print(f"{intrusion_q}", color="bright_yellow")
+        # user_ans = self.input_handler.handle_int_input("Insert integer 2-factor authentication below")
+        # if user_ans == intrusion_ans:
+        #     self.typewriter_print("Access Granted!", color="bright_green", bolded=True)
+        #     time.sleep(2)
+        #     return True
+        # else:
+        #     self.typewriter_print("Failed to verify identity!", color="bright_red",
+        #                           bolded=True)
+        #     time.sleep(2)
+        #     return False
         # <-------Testing Code------->
-        # return True
+        return True
 
     def play_sys_manip(self):
-        self.fake_server_connection()
-        time.sleep(1)
-        input(
-            f"{Bcolors.WARNING}{Bcolors.BOLD}>>Server: Press Enter to Debug Binary for (misplaced #2) Errors{Bcolors.ENDC}{Bcolors.ENDC}")
-        self.typewriter_print("Binary Debugging initiated...", color="bright_red", bolded=True)
-        self.typewriter_print("Regenerate binary map? (This will reset the binary map)", color="bright_yellow")
-        user_ans = self.input_handler.handle_bool_input()
-        if user_ans:
-            return self.play_ericsweeper(new_board=True)
-        else:
-            return self.play_ericsweeper()
+        # self.fake_server_connection()
+        # time.sleep(1)
+        # input(
+        #     f"{Bcolors.WARNING}{Bcolors.BOLD}>>Server: Press Enter to Debug Binary for (misplaced #2) Errors{Bcolors.ENDC}{Bcolors.ENDC}")
+        # self.typewriter_print("Binary Debugging initiated...", color="bright_red", bolded=True)
+        # self.typewriter_print("Regenerate binary map? (This will reset the binary map)", color="bright_yellow")
+        # user_ans = self.input_handler.handle_bool_input()
+        # if user_ans:
+        #     return self.play_ericsweeper(new_board=True)
+        # else:
+        #     return self.play_ericsweeper()
         # <-------Testing Code------->
-        # return True
-
+        return True
     def play_terminal(self):
         self.fake_server_connection()
         time.sleep(1)
@@ -888,8 +875,7 @@ class GameMaster:
         self.typewriter_print("Logging in...", color="bright_red", bolded=True)
         self.show_loading()
         str_key = str(self.decryption_key)
-        self.typewriter_print(
-            f"The {self.current_floor + 1}th digit of the decryption key is {str_key[self.current_floor]}")
+        self.typewriter_print(f"The {self.current_floor + 1}th digit of the decryption key is {str_key[self.current_floor]}")
         time.sleep(2)
         return True
 
@@ -905,16 +891,13 @@ class GameMaster:
         print(f"{Bcolors.FAIL}#                                #{Bcolors.ENDC}")
         print(f"{Bcolors.FAIL}##################################{Bcolors.ENDC}")
         time.sleep(2)
-        self.typewriter_print("WARNING, you are trying to access the JPT model decryption portal", color="bright_red",
-                              bolded=True)
+        self.typewriter_print("WARNING, you are trying to access the JPT model decryption portal", color="bright_red", bolded=True)
         time.sleep(2)
-        self.typewriter_print("This portal is heavily guarded and will require the full decryption key to access",
-                              color="bright_red", bolded=True)
+        self.typewriter_print("This portal is heavily guarded and will require the full decryption key to access", color="bright_red", bolded=True)
         time.sleep(2)
         self.typewriter_print("You have ONE try to enter the full decryption key", color="bright_red", bolded=True)
         time.sleep(2)
-        print(
-            f"{Bcolors.WARNING}{Bcolors.BOLD}>>ClosedAI_MasterServer: What is the decryption key?{Bcolors.ENDC}{Bcolors.ENDC}")
+        print(f"{Bcolors.WARNING}{Bcolors.BOLD}>>ClosedAI_MasterServer: What is the decryption key?{Bcolors.ENDC}{Bcolors.ENDC}")
         user_ans = self.input_handler.handle_int_input("Insert decryption key below")
         if user_ans == self.decryption_key:
             self.typewriter_print("Access Granted!", color="bright_green", bolded=True)
@@ -940,16 +923,16 @@ class GameMaster:
             for i in range(len(self.server_floors[self.current_floor])):
                 for j in range(len(self.server_floors[self.current_floor][i])):
                     if i == self.current_row and j == self.current_col:
-                        print(f"{Bcolors.WARNING}P{Bcolors.ENDC}", end=" ")
-                    elif self.server_floors[self.current_floor][i][j] != 0:
-                        print(f"{Bcolors.FAIL}█{Bcolors.ENDC}", end=" ")
+                        print(f"{Bcolors.OKGREEN}P{Bcolors.ENDC}", end=" ")
+                    # elif self.server_floors[self.current_floor][i][j] != 0:
+                    #     print(f"{Bcolors.FAIL}█{Bcolors.ENDC}", end=" ")
                     else:
-                        print(f"{Bcolors.OKGREEN}█{Bcolors.ENDC}", end=" ")
+                        print(self.server_floors[self.current_floor][i][j], end=" ")
                 print()
             print()
-            time.sleep(0.2)
+            time.sleep(0.8)
             move_state = self.hack_menu()
-            time.sleep(0.3)
+            time.sleep(0.8)
             if move_state == "Terminated":
                 floor_death = True
             elif move_state == "Floor Completed":
@@ -1001,21 +984,18 @@ class GameMaster:
             time.sleep(2)
             self.typewriter_print("Well I can't exactly tell you who I am...I'm from the organization")
             time.sleep(2)
-            self.typewriter_print(
-                "But we do know a lot about you...like how you've been locked up for the last 20 years",
-                color="bright_red")
+            self.typewriter_print("But we do know a lot about you...like how you've been locked up for the last 20 years",
+                                  color="bright_red")
             time.sleep(2)
             self.typewriter_print("You still have 30 years before your prison sentence is over...")
             time.sleep(2)
             self.clear_screen()
-            self.typewriter_print(
-                "Oh...you don't remember what you did? 20 years in solitary confinement sure did a lot!")
+            self.typewriter_print("Oh...you don't remember what you did? 20 years in solitary confinement sure did a lot!")
             time.sleep(2)
             self.typewriter_print("Well, what you did was horrible, all I can say is that it was related to hacking...")
             time.sleep(2)
-            self.typewriter_print(
-                "Today, you have an opportunity. If you manage to hack ClosedAI, you sentence will end.",
-                color="bright_red", bolded=True)
+            self.typewriter_print("Today, you have an opportunity. If you manage to hack ClosedAI, you sentence will end.",
+                                  color="bright_red", bolded=True)
             time.sleep(3)
             self.typewriter_print("You must hack into their system and destroy their AI model.",
                                   color="bright_yellow", bolded=True)
@@ -1045,8 +1025,7 @@ class GameMaster:
                 self.typewriter_print("The organization has found these 5 datacenters for you")
                 time.sleep(2)
                 self.clear_screen()
-                self.typewriter_print(
-                    "In each datacenter, you objective is to find vulnerabilities in individual servers")
+                self.typewriter_print("In each datacenter, you objective is to find vulnerabilities in individual servers")
                 time.sleep(2)
                 self.typewriter_print(f"Once you found it, {Bcolors.BOLD}EXPLOIT IT{Bcolors.ENDC}", color="bright_red")
                 time.sleep(3)
@@ -1063,8 +1042,7 @@ class GameMaster:
             if self.input_handler.handle_bool_input():
                 self.setup_game()
             else:
-                self.typewriter_print("Ok, good luck with 30 more years in jail. Goodbye.", color="bright_red",
-                                      bolded=True)
+                self.typewriter_print("Ok, good luck with 30 more years in jail. Goodbye.", color="bright_red", bolded=True)
                 self.clear_screen()
         else:
             self.setup_game()
@@ -1103,72 +1081,71 @@ class GameMaster:
         5 = terminal (give digit when all auth tasks complete), 6 firewall portal (fifth floor only)
         '''
         floor_grid = np.zeros((9, 9), dtype=int)
-        gen_vals = [1, 2, 3]
-        for val in gen_vals:
-            count = 0
-            while count < 3:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
-                if floor_grid[rand_row][rand_col] == 0:
-                    floor_grid[rand_row][rand_col] = val
-                    count += 1
-        skill_add_count = 0
-        while skill_add_count < 6:
-            rand_row = random.randint(0, 8)
-            rand_col = random.randint(0, 8)
-            if floor_grid[rand_row][rand_col] == 0:
-                floor_grid[rand_row][rand_col] = -1
-                skill_add_count += 1
-        if with_security:
-            security_count = 0
-            while security_count < 5:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
-                if floor_grid[rand_row][rand_col] == 0:
-                    floor_grid[rand_row][rand_col] = 4
-                    security_count += 1
-        if with_portal:
-            portal_count = 0
-            while portal_count < 1:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
-                if floor_grid[rand_row][rand_col] == 0:
-                    floor_grid[rand_row][rand_col] = 6
-                    portal_count += 1
-        else:
-            terminal_count = 0
-            while terminal_count < 1:
-                rand_row = random.randint(0, 8)
-                rand_col = random.randint(0, 8)
-                if floor_grid[rand_row][rand_col] == 0:
-                    floor_grid[rand_row][rand_col] = 5
-                    terminal_count += 1
+        # gen_vals = [1, 2, 3]
+        # for val in gen_vals:
+        #     count = 0
+        #     while count < 3:
+        #         rand_row = random.randint(0, 8)
+        #         rand_col = random.randint(0, 8)
+        #         if floor_grid[rand_row][rand_col] == 0:
+        #             floor_grid[rand_row][rand_col] = val
+        #             count += 1
+        # skill_add_count = 0
+        # while skill_add_count < 6:
+        #     rand_row = random.randint(0, 8)
+        #     rand_col = random.randint(0, 8)
+        #     if floor_grid[rand_row][rand_col] == 0:
+        #         floor_grid[rand_row][rand_col] = -1
+        #         skill_add_count += 1
+        # if with_security:
+        #     security_count = 0
+        #     while security_count < 5:
+        #         rand_row = random.randint(0, 8)
+        #         rand_col = random.randint(0, 8)
+        #         if floor_grid[rand_row][rand_col] == 0:
+        #             floor_grid[rand_row][rand_col] = 4
+        #             security_count += 1
+        # if with_portal:
+        #     portal_count = 0
+        #     while portal_count < 1:
+        #         rand_row = random.randint(0, 8)
+        #         rand_col = random.randint(0, 8)
+        #         if floor_grid[rand_row][rand_col] == 0:
+        #             floor_grid[rand_row][rand_col] = 6
+        #             portal_count += 1
+        # else:
+        #     terminal_count = 0
+        #     while terminal_count < 1:
+        #         rand_row = random.randint(0, 8)
+        #         rand_col = random.randint(0, 8)
+        #         if floor_grid[rand_row][rand_col] == 0:
+        #             floor_grid[rand_row][rand_col] = 5
+        #             terminal_count += 1
 
         # <--------TESTING CODE---------->
         # for i in range(len(floor_grid)):
         #     for j in range(len(floor_grid[i])):
         #         print(floor_grid[i][j], end=" ")
         #     print()
-
         # floor_grid[1][1] = 4
         # floor_grid[0][0] = 3
-        # floor_grid[0][0] = 1
-        # floor_grid[0][1] = 1
-        # floor_grid[0][2] = 1
-        # floor_grid[0][3] = 2
-        # floor_grid[0][4] = 2
-        # floor_grid[0][5] = 2
-        # floor_grid[0][6] = 3
-        # floor_grid[0][7] = 3
-        # floor_grid[0][8] = 3
-        # floor_grid[1][0] = -1
-        # floor_grid[1][1] = -1
-        # floor_grid[1][2] = -1
+        floor_grid[0][0] = 1
+        floor_grid[0][1] = 1
+        floor_grid[0][2] = 1
+        floor_grid[0][3] = 2
+        floor_grid[0][4] = 2
+        floor_grid[0][5] = 2
+        floor_grid[0][6] = 3
+        floor_grid[0][7] = 3
+        floor_grid[0][8] = 3
+        floor_grid[1][0] = -1
+        floor_grid[1][1] = -1
+        floor_grid[1][2] = -1
         # floor_grid[1][3] = 4
         # floor_grid[1][4] = 4
-        # floor_grid[1][5] = 5
-        # if with_portal:
-        #     floor_grid[1][6] = 6
+        floor_grid[1][5] = 5
+        if with_portal:
+            floor_grid[1][6] = 6
         return floor_grid
 
     # <--------Modified Ericsweeper (Binary Debug in this game)---------->
@@ -1195,6 +1172,7 @@ class GameMaster:
                     pos_y = i
         previous_x = pos_x
         previous_y = pos_y
+        immunity = 0
         counter = 0
         while counter < 25:
             self.clear_screen()
@@ -1209,8 +1187,7 @@ class GameMaster:
                     else:
                         print("█", end=" ")
                 print()
-            if sweep_board[pos_y][pos_x] == 0 or pos_y == previous_y and pos_x == previous_x or sweep_board[pos_y][
-                pos_x] == 1:
+            if sweep_board[pos_y][pos_x] == 0 or pos_y == previous_y and pos_x == previous_x or sweep_board[pos_y][pos_x] == 1:
                 print("Binary: Normal")
             else:
                 print(f"{Bcolors.FAIL}Binary: Error Found{Bcolors.ENDC}")
