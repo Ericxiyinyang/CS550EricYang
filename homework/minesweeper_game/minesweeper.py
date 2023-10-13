@@ -150,10 +150,18 @@ class MinesweeperGM:
         self.width = 1000
         self.height = 800
         self.map_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", int(self.height / self.rows) - 20)
+        self.info_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 20)
+        self.game_won = False
+        self.game_lost = False
+        self.num_on_mines = 0
+        self.flags = 0
+        self.mines = 0
 
     def generate_map(self, width, height, num_mines):
         self.rows = width
         self.cols = height
+        self.flags = num_mines
+        self.mines = num_mines
         if int(self.height / self.rows) - 50 < 0:
             self.map_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 30)
         else:
@@ -165,8 +173,8 @@ class MinesweeperGM:
             random_row = random.randint(1, width)
             random_col = random.randint(1, height)
             while generated_map[random_col][random_row] == -1:
-                random_row = random.randint(1, width - 1)
-                random_col = random.randint(1, height - 1)
+                random_row = random.randint(1, width)
+                random_col = random.randint(1, height)
             print(f"Mine placed at ({random_row}, {random_col})")
             generated_map[random_col][random_row] = -1
             # look around the mine and add 1 to the number of mines around, don't do anything if it's a mine
@@ -215,7 +223,10 @@ class MinesweeperGM:
             nx, ny = random_row + dx, random_col + dy
             if self.solution_map[nx][ny] != -1 and self.solution_map[nx][ny] != -2:
                 self.solution_map[nx][ny] += 1
+        self.solution_map[random_row][random_col] = -1
         print(f"Moved mine from ({col}, {row}) to ({random_col}, {random_row})")
+        if self.cover_map[random_row][random_col] == 2:
+            self.check_cover(random_row, random_col)
 
     # this is basically never used past development, but it's here just in case
     def print_map(self):
@@ -305,8 +316,25 @@ class MinesweeperGM:
                     text = self.map_font.render(str(cell), 1, "black")
                     screen.blit(text, (
                     x + (cell_size / 2 - text.get_width() / 2), y + (cell_size / 2 - text.get_height() / 2)))
+        screen.blit(self.info_font.render("Flags:", 1, "white"), (10, 30))
+        if self.flags > 6:
+            screen.blit(self.info_font.render(str(self.flags), 1, "green"), (10, 50))
+        elif self.flags > 3:
+            screen.blit(self.info_font.render(str(self.flags), 1, "yellow"), (10, 50))
+        else:
+            screen.blit(self.info_font.render(str(self.flags), 1, "red"), (10, 50))
 
         pygame.display.update()
+
+    def check_cover(self, row, col):
+        # check if the cell is a mine
+        if self.solution_map[row][col] == -1 and self.cover_map[row][col] == 2:
+            # if it is a mine, and you just marked it
+            self.num_on_mines += 1
+        elif self.solution_map[row][col] == -1 and self.cover_map[row][col] == 0 and self.flags > 0:
+            # if it is a mine, but you just un marked it
+            self.num_on_mines -= 1
+
 
     def play_game(self):
         # pygame setup
@@ -325,8 +353,9 @@ class MinesweeperGM:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    click_row, click_col = self.get_calibrated_click_position(pygame.mouse.get_pos())
+                    # print(click_col)
                     if event.button == 1:
-                        click_row, click_col = self.get_calibrated_click_position(pygame.mouse.get_pos())
                         # debugging position calibration
                         # print(click_row, click_col)
                         if click_row >= self.rows or click_col >= self.cols:
@@ -335,25 +364,71 @@ class MinesweeperGM:
                             if self.solution_map[click_col + 1][click_row + 1] == -1:
                                 self.first_move_map_update(click_col + 1, click_row + 1)
                             first_move = False
-                            self.cover_map[click_col + 1][click_row + 1] = 1
-                        else:
-                            self.cover_map[click_col + 1][click_row + 1] = 1
+                        if self.cover_map[click_col + 1][click_row + 1] == 2:
+                            self.flags += 1
+                        self.cover_map[click_col + 1][click_row + 1] = 1
+
                     elif event.button == 3:
-                        click_row, click_col = self.get_calibrated_click_position(pygame.mouse.get_pos())
                         # debugging position calibration
                         # print(click_row, click_col)
                         if click_row >= self.rows or click_col >= self.cols or self.cover_map[click_col + 1][
                             click_row + 1] == 1:
                             continue
-                        self.cover_map[click_col + 1][click_row + 1] = 2
+                        if self.cover_map[click_col + 1][click_row + 1] == 2:
+                            self.cover_map[click_col + 1][click_row + 1] = 0
+                            if not first_move:
+                                self.check_cover(click_col + 1, click_row + 1)
+                            self.flags += 1
+                        elif self.flags > 0:
+                            self.cover_map[click_col + 1][click_row + 1] = 2
+                            if not first_move:
+                                self.check_cover(click_col + 1, click_row + 1)
+                            self.flags -= 1
+                        elif self.flags == 0:
+                            continue
+
+
 
             # self.print_map()
             self.draw_mine(screen, self.solution_map, self.cover_map)
+            print(f"{self.num_on_mines}, {self.mines}")
+            if self.num_on_mines == self.mines:
+                self.game_won = True
+                for i in range(1, len(self.cover_map)-1):
+                    for j in range(1, len(self.cover_map[i])-1):
+                        visibility = int(self.cover_map[i][j])
+                        print(visibility)
+                        if visibility == 0:
+                            self.game_won = False
+
+            elif self.game_lost:
+                pass
+
+            if self.game_won:
+                self.play_game_won()
+            elif self.game_lost:
+                self.play_game_lost()
             # # flip() the display to put your work on screen
             # pygame.display.flip()
             # clock.tick(60)
         pygame.quit()
 
+    def play_game_won(self):
+        icon = pygame.image.load("Ericsweeper_thumb.png")
+        pygame.display.set_icon(icon)
+        screen = pygame.display.set_mode((1000, 800))
+        win_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 55)
+        while True:
+            text = win_font.render("You won!", 1, "white")
+            screen.blit(text, (500 - text.get_width() / 2, 400 - text.get_height() / 2))
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+    def play_game_lost(self):
+        pass
     def get_calibrated_click_position(self, click_position):
         click_x, click_y = click_position
         cell_size = self.height / self.rows
@@ -376,7 +451,7 @@ if __name__ == "__main__":
         else:
             # impossible boxes, no bombs, too many bombs, etc
             if int(user_argument[1]) < 2 or int(user_argument[2]) < 2 or int(user_argument[3]) < 1 or int(
-                    user_argument[3]) >= int(user_argument[1]) * int(user_argument[2]) - 35:
+                    user_argument[3]) >= int(user_argument[1]) * int(user_argument[2]):
                 print("Invalid input, please try again.")
             elif abs(int(user_argument[1]) - int(user_argument[2])) >= 3 or int(user_argument[1]) > 21 or int(
                     user_argument[2]) > 21:
