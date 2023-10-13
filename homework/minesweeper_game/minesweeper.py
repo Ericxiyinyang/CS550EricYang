@@ -7,6 +7,7 @@ Referenced previously written code for the adventure game--did not copy however 
 PyGame Video player - https://github.com/ree1261/pyvidplayer2
 Got the colors for minesweeper numbers from here - https://www.reddit.com/r/BattleForDreamIsland/comments/gcbwv7/did_you_know_that_4_2_and_other_numbers_from_x/
 Referenced pygame "Named Colors" for color strings - https://www.pygame.org/docs/ref/color_list.html
+Tutorial on PyGame buttons because somehow this game library does not have buttons - https://youtu.be/G8MYGDf_9ho?si=1QJOf3QUy1jC4BXb
 
 *THIS VERSION HAS THE EZINPUT & DEVTOOLS LIBRARY IN THE SAME SCRIPT*
 *please do all pip installs before running*
@@ -275,10 +276,8 @@ class MinesweeperGM:
             if node not in visited:
                 # mark it as visited
                 visited.add(node)
-                # push all its adjacent nodes to the stack
                 for neighbour in graph[node]:
                     stack.append(neighbour)
-        # return visited
         return visited
 
     def draw_mine(self, screen, solution_board, cover_board):
@@ -367,6 +366,8 @@ class MinesweeperGM:
                         if self.cover_map[click_col + 1][click_row + 1] == 2:
                             self.flags += 1
                         self.cover_map[click_col + 1][click_row + 1] = 1
+                        if self.solution_map[click_col + 1][click_row + 1] == -1:
+                            self.game_lost = True
 
                     elif event.button == 3:
                         # debugging position calibration
@@ -401,25 +402,25 @@ class MinesweeperGM:
                         if visibility == 0:
                             self.game_won = False
 
-            elif self.game_lost:
-                pass
-
             if self.game_won:
-                self.play_game_won()
+                self.play_endscreen(True)
             elif self.game_lost:
-                self.play_game_lost()
-            # # flip() the display to put your work on screen
+                self.play_endscreen(False)
+            # flip() the display to put work on screen
             # pygame.display.flip()
             # clock.tick(60)
         pygame.quit()
 
-    def play_game_won(self):
+    def play_endscreen(self, win):
         icon = pygame.image.load("Ericsweeper_thumb.png")
         pygame.display.set_icon(icon)
         screen = pygame.display.set_mode((1000, 800))
         win_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 55)
         while True:
-            text = win_font.render("You won!", 1, "white")
+            if win:
+                text = win_font.render("You won!", 1, "white")
+            else:
+                text = win_font.render("You lost!", 1, "white")
             screen.blit(text, (500 - text.get_width() / 2, 400 - text.get_height() / 2))
             pygame.display.update()
             for event in pygame.event.get():
@@ -427,8 +428,7 @@ class MinesweeperGM:
                     pygame.quit()
                     sys.exit()
 
-    def play_game_lost(self):
-        pass
+
     def get_calibrated_click_position(self, click_position):
         click_x, click_y = click_position
         cell_size = self.height / self.rows
@@ -449,7 +449,7 @@ if __name__ == "__main__":
             print("Invalid input, please try again.")
         # if there are arguments, then...
         else:
-            # impossible boxes, no bombs, too many bombs, etc
+            # impossible boxes, no bombs, either many bombs, etc
             if int(user_argument[1]) < 2 or int(user_argument[2]) < 2 or int(user_argument[3]) < 1 or int(
                     user_argument[3]) >= int(user_argument[1]) * int(user_argument[2]):
                 print("Invalid input, please try again.")
@@ -473,6 +473,7 @@ if __name__ == "__main__":
             user_argument[2] = EZInputHandlerBase().handle_int_input("Please enter the height of the map.")
             user_argument[3] = EZInputHandlerBase().handle_int_input("Please enter the number of mines.")
         clear_screen()
+
 
     # just getting our object going
     minesweeper_controller = MinesweeperGM()
