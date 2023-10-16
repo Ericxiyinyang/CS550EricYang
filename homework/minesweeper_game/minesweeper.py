@@ -24,7 +24,11 @@ Have a good day! :)
 
 On my honor, I have neither given nor received unauthorized aid on this assignment.
 """
-
+"""
+importing relevant packages: Numpy for map handeling, sys for command line arguments, os for clearing the screen,
+random for random, time for time, pygame as the rendering engine pyvidplayer2 for the tutorial video, and deque for
+faster DFS algorithm to handle cleaning zeros in larger maps (I was looking for something similar to priority_queue in C++. 
+"""
 import numpy as np
 import sys
 import os
@@ -37,16 +41,25 @@ from collections import deque
 
 
 # <--------------------------- Self Written Packages --------------------------->
+"""
+Minesweeper devtools package that I used to visualize the map before implementing the pygame interface.
+The terminal interface was just bad for visualizing the generation method and the map itself so I used
+matplotlib to visualize the map.
+"""
 class MinesweeperDevTools:
     def __init__(self):
         self.version = "0.0.1"
         self.author = "Eric Yang'25"
 
     def view_map_matplotlib(self, map):
+        # making basic matplotlib grid and mapping colors to the "CMRmap" color map
         plt.imshow(map, cmap="CMRmap")
         plt.show()
 
-
+"""
+The same old input handler that I've been using for the past few project, though very lightly used this
+time around since I made a pygame.
+"""
 class EZInputHandlerBase:
     def __init__(self):
         self.version = "0.0.1"
@@ -121,15 +134,23 @@ def clear_screen():
     # Using os.system to clear the terminal screen, short if else to support multiple OS
     os.system('cls' if os.name == 'nt' else 'clear')
 
-
+"""
+The actual class that runs the whole show, it houses the different pygame scenes and also generation method
+that we need to use. It also stores both the solution_map and the cover_map.
+"""
 class MinesweeperGM:
+    """
+    This class should be initialized with the number of rows, columns, and mines in order to generate a placeholder
+    solution_map since we need to make sure the first click is never a mine.
+    """
     def __init__(self, rows, cols, mines):
-        # store map and "look around" positions
+        # "look around" positions, so we can just use this instead of rewriting all the time
         self.relative_positions = [
             (-1, -1), (-1, 0), (-1, 1),
             (0, -1), (0, 1),
             (1, -1), (1, 0), (1, 1)
         ]
+        # Storing the colors & number colors in a dict to map it to the number
         self.BGCOLOR = (19, 19, 19)
         self.rows = rows
         self.cols = cols
@@ -146,20 +167,29 @@ class MinesweeperGM:
         self.cell_color = "grey30"
         self.revealed_cell_color = "grey"
         self.marked_cell_color = "red"
+        # pygame graphics setup (screen + fonts)
         self.width = 1000
         self.height = 800
         self.map_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", int(self.height / self.rows) - 20)
         self.info_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 20)
+        # game conditions
         self.game_won = False
         self.game_lost = False
+        # variables that track the game
         self.num_on_mines = 0
         self.flags = 0
         self.mines = mines
+        # initialize the maps with just zeros and gutters but the same size as the actually generated map
         self.solution_map = np.zeros((self.rows + 2, self.cols + 2))
         self.cover_map = np.zeros((self.rows + 2, self.cols + 2))
 
     def is_within_safe_zone(self, row, col, first_click_row, first_click_col, safe_radius):
         """Check if given (row, col) is within the safe zone around the user's first click."""
+        """
+        The idea: if |row - first_click_row| <= safe_radius and |col - first_click_col| <= safe_radius, then the cell is
+        within the safe zone. This is because the safe zone is a square with side length (1 + (2*safe_radius))^2. If it
+        is within this safe zone, then we return True, else we return False.
+        """
         return abs(row - first_click_row) <= safe_radius and abs(col - first_click_col) <= safe_radius
 
     def generate_map(self, width, height, num_mines, first_click_row, first_click_col, safe_radius):
