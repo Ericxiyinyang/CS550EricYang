@@ -192,79 +192,111 @@ class MinesweeperGM:
         """
         return abs(row - first_click_row) <= safe_radius and abs(col - first_click_col) <= safe_radius
 
+    """
+    This is one of the KEY methods of the GM class. It generates the map with respect to the first click that the player
+    makes
+    """
     def generate_map(self, width, height, num_mines, first_click_row, first_click_col, safe_radius):
+        # First, we will calculate the size of the pygame font to be used to display the numbers based on map's height
         if int(self.height / self.rows) - 50 < 0:
             self.map_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 30)
         else:
             self.map_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", int(self.height / self.rows) - 20)
+
+
         # generate a 2d array that has gutters with zeros
         generated_map = np.zeros((width + 2, height + 2))
+
+
         # pick random position within the gutter boundaries n times and set it to -1
+        # loop through how many times we want to "place a mine"
         for num in range(num_mines):
+            # first, get a random [][] index
             random_row = random.randint(1, width)
             random_col = random.randint(1, height)
+            # however, if the index is already a bomb, or it is within a 2 block radius of the first click, find another
             while generated_map[random_col][random_row] == -1 or self.is_within_safe_zone(random_row, random_col, first_click_row, first_click_col, safe_radius):
+                # the "finding another one" everytime we get a bad index
                 random_row = random.randint(1, width)
                 random_col = random.randint(1, height)
+            # used this for debugging mine placement
             # print(f"Mine placed at ({random_row}, {random_col})")
+
+            # set the "good" random index to -1
             generated_map[random_col][random_row] = -1
+
+
             # look around the mine and add 1 to the number of mines around, don't do anything if it's a mine
+            # for each set of +-x & +-y loop through these changes
             for dx, dy in self.relative_positions:
+                # calculate the new x and y using the index the bomb is at + the lookaround delta
                 nx, ny = random_row + dx, random_col + dy
+                # if the new x and y is not a bomb, then add 1 to the number of mines around
                 if generated_map[ny][nx] != -1:
                     generated_map[ny][nx] += 1
+
         # set the gutter to -2
         for row_count in range(len(generated_map)):
             for col_count in range(len(generated_map[row_count])):
+                # check if the row or col is a gutter (end/beginning), if it is, set it to -2
                 if row_count == 0 or row_count == len(generated_map) - 1:
                     generated_map[row_count][col_count] = -2
                 if col_count == 0 or col_count == len(generated_map[row_count]) - 1:
                     generated_map[row_count][col_count] = -2
+
+
         # set the map to the generated map, dtype int because numpy comes with float by default
         self.solution_map = np.array(generated_map, dtype=int)
-        self.cover_map = np.zeros((width + 2, height + 2))
+        self.cover_map = np.zeros((width + 2, height + 2), dtype=int)
 
-    def first_move_map_update(self, row, col):
-        """
-        If the first move is a mine, then move the mine to a random location and update the map
-        :param row: row of old mine
-        :param col: col of old mine
-        :return: Nothing, updates self.solution_map with a new mine position
-        """
-        self.solution_map[row][col] = 0
-        for dx, dy in self.relative_positions:
-            nx, ny = row + dx, col + dy
-            if self.solution_map[nx][ny] != -1 and self.solution_map[nx][ny] != -2:
-                self.solution_map[nx][ny] -= 1
-        random_row = random.randint(1, self.rows)
-        random_col = random.randint(1, self.cols)
-        while self.solution_map[random_row][random_col] == -1 or self.solution_map[random_row][random_col] == -2:
-            random_row = random.randint(1, self.rows)
-            random_col = random.randint(1, self.cols)
-        new_mines_around = 0
-        for dx, dy in self.relative_positions:
-            nx, ny = row + dx, col + dy
-            print(f"({nx}, {ny})")
-            if self.solution_map[ny][nx] == -1:
-                new_mines_around += 1
-                print("added one")
-        self.solution_map[row][col] = new_mines_around
-        # look around the mine and add 1 to the number of mines around, don't do anything if it's a mine
-        for dx, dy in self.relative_positions:
-            nx, ny = random_row + dx, random_col + dy
-            if self.solution_map[nx][ny] != -1 and self.solution_map[nx][ny] != -2:
-                self.solution_map[nx][ny] += 1
-        self.solution_map[random_row][random_col] = -1
-        print(f"Moved mine from ({col}, {row}) to ({random_col}, {random_row})")
-        if self.cover_map[random_row][random_col] == 2:
-            self.check_cover(random_row, random_col)
+    """
+    This was how it used to account for the user's first move, by basically moving the mine to a random location
+    if the user clicked on a mine. However, it does not work well for DFS and it only provides that the current space
+    is empty, which sometimes leads to nothing else getting revealed.
+    """
+    # def first_move_map_update(self, row, col):
+    #     """
+    #     If the first move is a mine, then move the mine to a random location and update the map
+    #     :param row: row of old mine
+    #     :param col: col of old mine
+    #     :return: Nothing, updates self.solution_map with a new mine position
+    #     """
+    #     self.solution_map[row][col] = 0
+    #     for dx, dy in self.relative_positions:
+    #         nx, ny = row + dx, col + dy
+    #         if self.solution_map[nx][ny] != -1 and self.solution_map[nx][ny] != -2:
+    #             self.solution_map[nx][ny] -= 1
+    #     random_row = random.randint(1, self.rows)
+    #     random_col = random.randint(1, self.cols)
+    #     while self.solution_map[random_row][random_col] == -1 or self.solution_map[random_row][random_col] == -2:
+    #         random_row = random.randint(1, self.rows)
+    #         random_col = random.randint(1, self.cols)
+    #     new_mines_around = 0
+    #     for dx, dy in self.relative_positions:
+    #         nx, ny = row + dx, col + dy
+    #         print(f"({nx}, {ny})")
+    #         if self.solution_map[ny][nx] == -1:
+    #             new_mines_around += 1
+    #             print("added one")
+    #     self.solution_map[row][col] = new_mines_around
+    #     # look around the mine and add 1 to the number of mines around, don't do anything if it's a mine
+    #     for dx, dy in self.relative_positions:
+    #         nx, ny = random_row + dx, random_col + dy
+    #         if self.solution_map[nx][ny] != -1 and self.solution_map[nx][ny] != -2:
+    #             self.solution_map[nx][ny] += 1
+    #     self.solution_map[random_row][random_col] = -1
+    #     print(f"Moved mine from ({col}, {row}) to ({random_col}, {random_row})")
+    #     if self.cover_map[random_row][random_col] == 2:
+    #         self.check_cover(random_row, random_col)
 
 
 
     # this is basically never used past development, but it's here just in case
     def print_map(self):
+        # loop through entire 2d array without the gutter indicies
         for i in range(1, len(self.solution_map) - 1):
             for j in range(1, len(self.solution_map[i]) - 1):
+                # if the thing at this index is a mine, print M. If it's a gutter, print X. Else, print the number
                 if self.solution_map[i][j] == -1:
                     print("M", end=" ")
                 elif self.solution_map[i][j] == -2:
@@ -273,27 +305,46 @@ class MinesweeperGM:
                     print(self.solution_map[i][j], end=" ")
             print()
 
+    """
+    This method plays the introduction video by utilizing the pygame video player.
+    """
     def play_intro(self):
+        # load the pygame icon for this scene
         icon = pygame.image.load("Ericsweeper_thumb.png")
+        # set the game icon with pygame.display
         pygame.display.set_icon(icon)
+        # start a clock for the video just in case we need it
         clock = pygame.time.Clock()
+        # initialize the video with the pyvidplayer2 library's Video() class, basically we made a new Video object
         vid = Video("esweepintro.mp4")
+        # set screen ratios for this video
         screen = pygame.display.set_mode((1000, 800))
+
+        # this while true represents every frame of the game
         while True:
+            # draw the video frame by frame
             vid.draw(screen, (0, 0), force_draw=False)
+            # update the display so every frame is drawn
             pygame.display.update()
+
+            # record user_events throughout the whole session
             for event in pygame.event.get():
+                # if the user clicks the mouse, close the video and start the game
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     vid.close()
                     self.play_game()
                     sys.exit()
+                # if the user clicks the X, close the video and quit the game
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+            # tick the clock to make sure the video is playing at constant FPS
             clock.tick(60)
 
-
-
+    """
+    This function utilizes pygame to deliver a frame in the game, the main game loop will call this every frame to update
+    the screen.
+    """
     def draw_mine(self, screen, solution_board, cover_board):
         cell_size = self.height / self.rows
         screen.fill(self.BGCOLOR)
