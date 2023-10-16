@@ -123,18 +123,16 @@ def clear_screen():
 
 
 class MinesweeperGM:
-    def __init__(self):
+    def __init__(self, rows, cols, mines):
         # store map and "look around" positions
-        self.solution_map = None
         self.relative_positions = [
             (-1, -1), (-1, 0), (-1, 1),
             (0, -1), (0, 1),
             (1, -1), (1, 0), (1, 1)
         ]
-        self.cover_map = None
         self.BGCOLOR = (19, 19, 19)
-        self.rows = 10
-        self.cols = 10
+        self.rows = rows
+        self.cols = cols
         self.number_color_map = {
             1: "blue",
             2: "darkgreen",
@@ -156,13 +154,15 @@ class MinesweeperGM:
         self.game_lost = False
         self.num_on_mines = 0
         self.flags = 0
-        self.mines = 0
+        self.mines = mines
+        self.solution_map = np.zeros((self.rows + 2, self.cols + 2))
+        self.cover_map = np.zeros((self.rows + 2, self.cols + 2))
 
-    def generate_map(self, width, height, num_mines):
-        self.rows = width
-        self.cols = height
-        self.flags = num_mines
-        self.mines = num_mines
+    def is_within_safe_zone(self, row, col, first_click_row, first_click_col, safe_radius):
+        """Check if given (row, col) is within the safe zone around the user's first click."""
+        return abs(row - first_click_row) <= safe_radius and abs(col - first_click_col) <= safe_radius
+
+    def generate_map(self, width, height, num_mines, first_click_row, first_click_col, safe_radius):
         if int(self.height / self.rows) - 50 < 0:
             self.map_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 30)
         else:
@@ -173,10 +173,10 @@ class MinesweeperGM:
         for num in range(num_mines):
             random_row = random.randint(1, width)
             random_col = random.randint(1, height)
-            while generated_map[random_col][random_row] == -1:
+            while generated_map[random_col][random_row] == -1 or self.is_within_safe_zone(random_row, random_col, first_click_row, first_click_col, safe_radius):
                 random_row = random.randint(1, width)
                 random_col = random.randint(1, height)
-            print(f"Mine placed at ({random_row}, {random_col})")
+            # print(f"Mine placed at ({random_row}, {random_col})")
             generated_map[random_col][random_row] = -1
             # look around the mine and add 1 to the number of mines around, don't do anything if it's a mine
             for dx, dy in self.relative_positions:
@@ -229,6 +229,8 @@ class MinesweeperGM:
         if self.cover_map[random_row][random_col] == 2:
             self.check_cover(random_row, random_col)
 
+
+
     # this is basically never used past development, but it's here just in case
     def print_map(self):
         for i in range(1, len(self.solution_map) - 1):
@@ -260,25 +262,7 @@ class MinesweeperGM:
                     sys.exit()
             clock.tick(60)
 
-    def dfs(self, graph, start):
-        # implement dfs to start for all 0 around it
-        # create a stack
-        stack = deque()
-        # push the start node
-        stack.append(start)
-        # create a set to store visited nodes
-        visited = set()
-        # while the stack is not empty
-        while stack:
-            # pop a node from the stack
-            node = stack.pop()
-            # if the node is not visited
-            if node not in visited:
-                # mark it as visited
-                visited.add(node)
-                for neighbour in graph[node]:
-                    stack.append(neighbour)
-        return visited
+
 
     def draw_mine(self, screen, solution_board, cover_board):
         cell_size = self.height / self.rows
@@ -293,26 +277,26 @@ class MinesweeperGM:
                 x = (j - 1) * cell_size + ((1000 - cell_size * self.cols) / 2)
                 covered = cover_board[i][j]
                 if covered == 0:
-                    pygame.draw.rect(screen, self.cell_color, (x, y, cell_size, cell_size), border_radius=30)
-                    pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=30)
+                    pygame.draw.rect(screen, self.cell_color, (x, y, cell_size, cell_size), border_radius=int(30 * cell_size/80))
+                    pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "black", (x, y, cell_size, cell_size), 1)
                     continue
                 elif covered == 1:
-                    pygame.draw.rect(screen, self.revealed_cell_color, (x, y, cell_size, cell_size), border_radius=30)
-                    pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=30)
+                    pygame.draw.rect(screen, self.revealed_cell_color, (x, y, cell_size, cell_size), border_radius=int(30 * cell_size/80))
+                    pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "black", (x, y, cell_size, cell_size), 1)
                 elif covered == 2:
-                    pygame.draw.rect(screen, self.marked_cell_color, (x, y, cell_size, cell_size), border_radius=30)
-                    pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=30)
+                    pygame.draw.rect(screen, self.marked_cell_color, (x, y, cell_size, cell_size), border_radius=int(30 * cell_size/80))
+                    pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "black", (x, y, cell_size, cell_size), 1)
                     continue
                 if cell > 0:
                     text = self.map_font.render(str(cell), 1, self.number_color_map[cell])
                     screen.blit(text, (
                     x + (cell_size / 2 - text.get_width() / 2), y + (cell_size / 2 - text.get_height() / 2)))
-                # ONLY ENABLE THIS IF YOU WANT TO SEE THE SOLUTION MAP
+                # ONLY ENABLE THIS IF YOU WANT TO SEE THE bomb MAP
                 elif cell == -1:
-                    text = self.map_font.render(str(cell), 1, "black")
+                    text = self.map_font.render("X", 1, "Red")
                     screen.blit(text, (
                     x + (cell_size / 2 - text.get_width() / 2), y + (cell_size / 2 - text.get_height() / 2)))
         screen.blit(self.info_font.render("Flags:", 1, "white"), (10, 30))
@@ -330,10 +314,9 @@ class MinesweeperGM:
         if self.solution_map[row][col] == -1 and self.cover_map[row][col] == 2:
             # if it is a mine, and you just marked it
             self.num_on_mines += 1
-        elif self.solution_map[row][col] == -1 and self.cover_map[row][col] == 0 and self.flags > 0:
+        elif self.solution_map[row][col] == -1 and self.cover_map[row][col] == 0:
             # if it is a mine, but you just un marked it
             self.num_on_mines -= 1
-
 
     def play_game(self):
         # pygame setup
@@ -344,6 +327,7 @@ class MinesweeperGM:
         icon = pygame.image.load("Ericsweeper_thumb.png")
         pygame.display.set_icon(icon)
         first_move = True
+
 
         while running:
             # poll for events
@@ -360,8 +344,9 @@ class MinesweeperGM:
                         if click_row >= self.rows or click_col >= self.cols:
                             continue
                         if first_move:
-                            if self.solution_map[click_col + 1][click_row + 1] == -1:
-                                self.first_move_map_update(click_col + 1, click_row + 1)
+                            self.generate_map(self.rows, self.cols, self.mines, click_row + 1, click_col + 1, 2)
+                            # if self.solution_map[click_col + 1][click_row + 1] == -1:
+                            #     self.first_move_map_update(click_col + 1, click_row + 1)
                             first_move = False
                         if self.cover_map[click_col + 1][click_row + 1] == 2:
                             self.flags += 1
@@ -369,47 +354,63 @@ class MinesweeperGM:
                         if self.solution_map[click_col + 1][click_row + 1] == -1:
                             self.game_lost = True
 
-                    elif event.button == 3:
-                        # debugging position calibration
-                        # print(click_row, click_col)
-                        if click_row >= self.rows or click_col >= self.cols or self.cover_map[click_col + 1][
-                            click_row + 1] == 1:
-                            continue
-                        if self.cover_map[click_col + 1][click_row + 1] == 2:
-                            self.cover_map[click_col + 1][click_row + 1] = 0
-                            if not first_move:
-                                self.check_cover(click_col + 1, click_row + 1)
-                            self.flags += 1
-                        elif self.flags > 0:
-                            self.cover_map[click_col + 1][click_row + 1] = 2
-                            if not first_move:
-                                self.check_cover(click_col + 1, click_row + 1)
-                            self.flags -= 1
-                        elif self.flags == 0:
-                            continue
+                        self.reveal_empty_spaces(click_col + 1, click_row + 1)
+                    if not first_move:
+                        if event.button == 3:
+                            # debugging position calibration
+                            # print(click_row, click_col)
+                            if click_row >= self.rows or click_col >= self.cols or self.cover_map[click_col + 1][
+                                click_row + 1] == 1:
+                                continue
+                            if self.cover_map[click_col + 1][click_row + 1] == 2:
+                                self.cover_map[click_col + 1][click_row + 1] = 0
+                                if not first_move:
+                                    self.check_cover(click_col + 1, click_row + 1)
+                                self.flags += 1
+                            elif self.flags > 0:
+                                self.cover_map[click_col + 1][click_row + 1] = 2
+                                if not first_move:
+                                    self.check_cover(click_col + 1, click_row + 1)
+                                self.flags -= 1
+                            elif self.flags == 0:
+                                continue
 
 
 
             # self.print_map()
             self.draw_mine(screen, self.solution_map, self.cover_map)
-            print(f"{self.num_on_mines}, {self.mines}")
-            if self.num_on_mines == self.mines:
-                self.game_won = True
-                for i in range(1, len(self.cover_map)-1):
-                    for j in range(1, len(self.cover_map[i])-1):
-                        visibility = int(self.cover_map[i][j])
-                        print(visibility)
-                        if visibility == 0:
-                            self.game_won = False
+            if not first_move:
+                print(f"{self.num_on_mines}, {self.mines}")
+                if self.num_on_mines == self.mines:
+                    self.game_won = self.check_win()
 
-            if self.game_won:
-                self.play_endscreen(True)
-            elif self.game_lost:
-                self.play_endscreen(False)
+                if self.game_won is True:
+                    time.sleep(0.3)
+                    self.play_endscreen(True)
+                if self.game_lost is True:
+                    time.sleep(1)
+                    self.play_endscreen(False)
             # flip() the display to put work on screen
             # pygame.display.flip()
             # clock.tick(60)
         pygame.quit()
+
+    def check_win(self):
+        for i in range(1, len(self.cover_map) - 1):
+            for j in range(1, len(self.cover_map[i]) - 1):
+                if self.cover_map[i][j] == 0:
+                    print("found non-revealed cell")
+                    if self.solution_map[i][j] != -1:
+                        return False
+        return True
+
+    def count_value_in_2d_list(self, value, count_list):
+        count = 0
+        for i in range(1, len(count_list) - 1):
+            for j in range(1, len(count_list[i]) - 1):
+                if count_list[i][j] == value:
+                    count += 1
+        return count
 
     def play_endscreen(self, win):
         icon = pygame.image.load("Ericsweeper_thumb.png")
@@ -417,17 +418,65 @@ class MinesweeperGM:
         screen = pygame.display.set_mode((1000, 800))
         win_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 55)
         while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_y:
+                    self.cover_map = np.zeros((self.rows + 2, self.cols + 2))
+                    self.solution_map = np.zeros((self.rows + 2, self.cols + 2))
+                    self.num_on_mines = 0
+                    self.flags = self.mines
+                    self.game_won = False
+                    self.game_lost = False
+                    self.play_game()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+                    pygame.quit()
+                    sys.exit()
+
             if win:
                 text = win_font.render("You won!", 1, "white")
             else:
                 text = win_font.render("You lost!", 1, "white")
             screen.blit(text, (500 - text.get_width() / 2, 400 - text.get_height() / 2))
-            pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            continue_text = self.info_font.render("Play Again: Y   Quit: N", 1, "white")
+            screen.blit(continue_text, (500 - continue_text.get_width() / 2, 600 - continue_text.get_height() / 2))
 
+            pygame.display.update()
+
+
+    def reveal_empty_spaces(self, y, x):
+
+        # Define the directions for adjacent cells (top-left, top, top-right, right, bottom-right, bottom, bottom-left, left)
+
+        # Create a deque to hold the locations to be cleared
+        to_clear = deque([(y, x)])
+
+        visited = set()  # To keep track of visited cells to avoid infinite loops
+
+        while to_clear:
+            curr_y, curr_x = to_clear.popleft()
+
+            if (curr_y, curr_x) in visited:
+                continue
+
+            visited.add((curr_y, curr_x))
+
+            # Reveal the space at the current position
+            self.cover_map[curr_y][curr_x] = 1
+
+            # If the current cell in solution_map is 0, check its neighbors
+            if self.solution_map[curr_y][curr_x] == 0:
+                for dy, dx in self.relative_positions:
+                    new_y, new_x = curr_y + dy, curr_x + dx
+
+                    # Check for boundary conditions
+                    if 0 <= new_y < self.solution_map.shape[0] and 0 <= new_x < self.solution_map.shape[1]:
+                        # If the space at the new position is hidden
+                        if self.cover_map[new_y][new_x] == 0:
+                            # If it's an empty space or a number, reveal it and add to the deque
+                            if self.solution_map[new_y][new_x] == 0 or self.solution_map[new_y][new_x] > 0:
+                                to_clear.append((new_y, new_x))
 
     def get_calibrated_click_position(self, click_position):
         click_x, click_y = click_position
@@ -454,8 +503,10 @@ if __name__ == "__main__":
                     user_argument[3]) >= int(user_argument[1]) * int(user_argument[2]):
                 print("Invalid input, please try again.")
             elif abs(int(user_argument[1]) - int(user_argument[2])) >= 3 or int(user_argument[1]) > 21 or int(
-                    user_argument[2]) > 21:
-                print("Your grid is too long or too wide, please try again.")
+                    user_argument[2]) > 21 or int(user_argument[1]) * int(user_argument[2]) < 25:
+                print("Your grid is too long or too wide or too small, please try again.")
+            elif int(user_argument[3]) > int(user_argument[1]) * int(user_argument[2]) - 25:
+                print(f"You have too many mines, max number of mines is area - 25. Please try again.")
             # if there are no errors, then break the loop
             else:
                 user_width = int(user_argument[1])
@@ -475,9 +526,14 @@ if __name__ == "__main__":
         clear_screen()
 
 
+
+
+
     # just getting our object going
-    minesweeper_controller = MinesweeperGM()
-    minesweeper_controller.generate_map(user_width, user_height, user_num_mines)
+    minesweeper_controller = MinesweeperGM(user_width, user_height, user_num_mines)
+    minesweeper_controller.flags = user_num_mines
+    minesweeper_controller.mines = user_num_mines
+    # minesweeper_controller.generate_map(user_width, user_height, user_num_mines)
 
     # <--------------------------- Development Section + Dev Package --------------------------->
 
