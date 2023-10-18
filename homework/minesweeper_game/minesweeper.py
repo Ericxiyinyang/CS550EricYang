@@ -1,6 +1,6 @@
 """
 Eric
-October 9th, 2023
+October 19th, 2023
 
 Sources:
 Referenced previously written code for the adventure game--did not copy however since this is a little bit different
@@ -14,16 +14,25 @@ Tutorial on PyGame buttons because somehow this game library does not have butto
 *BREW INSTALL FFMPEG & Portaudio before running*
 
 Reflection:
-This second checkpoint includes the conversion of the game from a text-based game to a GUI game. I used PyGame,
-a library that I have experience with to create the GUI game. I think this is a good way to scale the difficulty of the project
-to my skill level, and it also provides a better user experience than a text-based game. I also added a video intro to the game
-to make it more interesting. I made the intro in After Effects. I also added a "first move" feature that makes it so that the
-first click will never be on a mine. Overall, this was a really nice refresher on coding with 2D arrays and pygame.
+I really, really liked this project. Although we started out with just a terminal interface and basic map generation, the final product is the
+full, graphic, and interactive version of minesweeper that I wanted to see. I think that I scaled the difficulty of this project
+relatively well to both review dealing with 2D arrays while also trying something new: making a pygame. As with any project
+where a third-party library is used, I had to re-read pygame's docs to figure out how I can incorporate it with my existing
+terminal code. Additionally, play testing played an important role in finding bugs I simply did not think of or didn't have
+time to try. It's only because of how much play testing went into this game that it is as polished as it is now. One thing
+I decided to focus on this time (since I didn't do quite a good job on it in the last project) was to really comment out my code.
+In the last project, I only used docstrings to document each method, but this time I also added comments to the code itself.
+The massive line count you see is primarily due to the comments I added. I think that this is a good habit to get into, and
+I will continue to provide detailed documentation for my code in the future.
+
+(The trickiest functions in the project are also documented in a video I made, it's in this folder!)
 
 Have a good day! :)
 
 On my honor, I have neither given nor received unauthorized aid on this assignment.
 """
+
+
 """
 importing relevant packages: Numpy for map handeling, sys for command line arguments, os for clearing the screen,
 random for random, time for time, pygame as the rendering engine pyvidplayer2 for the tutorial video, and deque for
@@ -180,8 +189,8 @@ class MinesweeperGM:
         self.flags = 0
         self.mines = mines
         # initialize the maps with just zeros and gutters but the same size as the actually generated map
-        self.solution_map = np.zeros((self.rows + 2, self.cols + 2))
-        self.cover_map = np.zeros((self.rows + 2, self.cols + 2))
+        self.solution_map = np.zeros((self.cols + 2, self.rows + 2))
+        self.cover_map = np.zeros((self.cols + 2, self.rows + 2))
 
     def is_within_safe_zone(self, row, col, first_click_row, first_click_col, safe_radius):
         """Check if given (row, col) is within the safe zone around the user's first click."""
@@ -205,7 +214,7 @@ class MinesweeperGM:
 
 
         # generate a 2d array that has gutters with zeros
-        generated_map = np.zeros((width + 2, height + 2))
+        generated_map = np.zeros((height + 2, width + 2))
 
 
         # pick random position within the gutter boundaries n times and set it to -1
@@ -219,9 +228,10 @@ class MinesweeperGM:
                 # the "finding another one" everytime we get a bad index
                 random_row = random.randint(1, width)
                 random_col = random.randint(1, height)
+            # print(f"width: {width}, height: {height}")
             # used this for debugging mine placement
             # print(f"Mine placed at ({random_row}, {random_col})")
-
+            # print(f"random_row: {random_row}, random_col: {random_col}")
             # set the "good" random index to -1
             generated_map[random_col][random_row] = -1
 
@@ -231,9 +241,11 @@ class MinesweeperGM:
             for dx, dy in self.relative_positions:
                 # calculate the new x and y using the index the bomb is at + the lookaround delta
                 nx, ny = random_row + dx, random_col + dy
+                # print(f"({nx}, {ny})")
                 # if the new x and y is not a bomb, then add 1 to the number of mines around
                 if generated_map[ny][nx] != -1:
                     generated_map[ny][nx] += 1
+            # print("COMPLETE")
 
         # set the gutter to -2
         for row_count in range(len(generated_map)):
@@ -247,7 +259,7 @@ class MinesweeperGM:
 
         # set the map to the generated map, dtype int because numpy comes with float by default
         self.solution_map = np.array(generated_map, dtype=int)
-        self.cover_map = np.zeros((width + 2, height + 2), dtype=int)
+        self.cover_map = np.zeros((height + 2, width + 2), dtype=int)
 
     """
     This was how it used to account for the user's first move, by basically moving the mine to a random location
@@ -346,41 +358,67 @@ class MinesweeperGM:
     the screen.
     """
     def draw_mine(self, screen, solution_board, cover_board):
-        cell_size = self.height / self.rows
+        # a cell is a square, so it's l = available height pixels/rows
+        if self.rows > self.cols:
+            cell_size = (self.width - 200) / self.rows
+        else:
+            cell_size = self.height / self.cols
+        # fill in the bg color
         screen.fill(self.BGCOLOR)
+        # loop through the solution board
         for i, col in enumerate(solution_board):
+            # skip the gutter indices
             if i == 0 or i == len(solution_board) - 1:
                 continue
-            y = (i - 1) * cell_size
+            # calculate the y position of the cell this is dependent on if the rows or cols are bigger
+            if self.cols > self.rows:
+                y = (i - 1) * cell_size
+            else:
+                y = (i - 1) * cell_size + ((800 - cell_size * self.cols) / 2)
             for j, cell in enumerate(col):
+                # skip the gutter indices
                 if j == 0 or j == len(col) - 1:
                     continue
-                x = (j - 1) * cell_size + ((1000 - cell_size * self.cols) / 2)
+                # calculate the x position of the cell, cell position - 1 b/c gutters * cell size. + 1000 - cell_size * self.cols)/2 b/c we want to center the board
+                x = (j - 1) * cell_size + ((1000 - cell_size * self.rows) / 2)
+
+                # get the cover information from the cover board
                 covered = cover_board[i][j]
+
+                # draw the cell based on the cover information
                 if covered == 0:
+                    # if the cell is covered, draw the cell color, then draw a white border, then draw a black border
                     pygame.draw.rect(screen, self.cell_color, (x, y, cell_size, cell_size), border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "black", (x, y, cell_size, cell_size), 1)
                     continue
                 elif covered == 1:
+                    # if the cell is revealed, draw the revealed cell color, then draw a white border, then draw a black border
                     pygame.draw.rect(screen, self.revealed_cell_color, (x, y, cell_size, cell_size), border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "black", (x, y, cell_size, cell_size), 1)
                 elif covered == 2:
+                    # if the cell is marked, draw the marked cell color, then draw a white border, then draw a black border
                     pygame.draw.rect(screen, self.marked_cell_color, (x, y, cell_size, cell_size), border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "white", (x, y, cell_size, cell_size), width=3, border_radius=int(30 * cell_size/80))
                     pygame.draw.rect(screen, "black", (x, y, cell_size, cell_size), 1)
                     continue
                 if cell > 0:
+                    # if the cell is a number, draw the number in the color that corresponds to the number
                     text = self.map_font.render(str(cell), 1, self.number_color_map[cell])
                     screen.blit(text, (
                     x + (cell_size / 2 - text.get_width() / 2), y + (cell_size / 2 - text.get_height() / 2)))
-                # ONLY ENABLE THIS IF YOU WANT TO SEE THE bomb MAP
+                # ONLY ENABLE THIS IF YOU WANT TO SEE THE X bomb
                 elif cell == -1:
+                    # if the cell is a mine, draw an X in the cell
                     text = self.map_font.render("X", 1, "Red")
                     screen.blit(text, (
                     x + (cell_size / 2 - text.get_width() / 2), y + (cell_size / 2 - text.get_height() / 2)))
+
+        # draw the info text about how many flags are left
         screen.blit(self.info_font.render("Flags:", 1, "white"), (10, 30))
+
+        # color map the flag number so it changes color when running low
         if self.flags > 6:
             screen.blit(self.info_font.render(str(self.flags), 1, "green"), (10, 50))
         elif self.flags > 3:
@@ -388,6 +426,7 @@ class MinesweeperGM:
         else:
             screen.blit(self.info_font.render(str(self.flags), 1, "red"), (10, 50))
 
+        # refresh the display
         pygame.display.update()
 
     def check_cover(self, row, col):
@@ -417,58 +456,83 @@ class MinesweeperGM:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    # When there is a mouse click of some sort, get the position of the mouse and calibrate it to the board
                     click_row, click_col = self.get_calibrated_click_position(pygame.mouse.get_pos())
                     # print(click_col)
+                    # if it is a left click
                     if event.button == 1:
                         # debugging position calibration
                         # print(click_row, click_col)
+                        # if the click is outside of the board, do nothing
                         if click_row >= self.rows or click_col >= self.cols:
                             continue
+                        # if it's the first move
                         if first_move:
+                            # generate the map with the first click as the safe zone
                             self.generate_map(self.rows, self.cols, self.mines, click_row + 1, click_col + 1, 2)
                             # if self.solution_map[click_col + 1][click_row + 1] == -1:
                             #     self.first_move_map_update(click_col + 1, click_row + 1)
+                            # not the first move anymore!
                             first_move = False
+                        # if the cell is flagged give the flag back
                         if self.cover_map[click_col + 1][click_row + 1] == 2:
                             self.flags += 1
+                        # reveal the cell
                         self.cover_map[click_col + 1][click_row + 1] = 1
+                        # check if the cell is a mine
                         if self.solution_map[click_col + 1][click_row + 1] == -1:
+                            # if it is a mine, and you just revealed it, you lose
                             self.game_lost = True
-
+                        # reveal all the zeros around it
                         self.reveal_empty_spaces(click_col + 1, click_row + 1)
+
+                    # only let players flag if it is not the first move
                     if not first_move:
                         if event.button == 3:
                             # debugging position calibration
                             # print(click_row, click_col)
+                            # if the click is outside the board or already revealed, do nothing
                             if click_row >= self.rows or click_col >= self.cols or self.cover_map[click_col + 1][
                                 click_row + 1] == 1:
                                 continue
+                            # if the cell is already flagged, unflag it
                             if self.cover_map[click_col + 1][click_row + 1] == 2:
                                 self.cover_map[click_col + 1][click_row + 1] = 0
                                 if not first_move:
                                     self.check_cover(click_col + 1, click_row + 1)
                                 self.flags += 1
+                            # if the cell is not flagged, flag it
                             elif self.flags > 0:
                                 self.cover_map[click_col + 1][click_row + 1] = 2
                                 if not first_move:
                                     self.check_cover(click_col + 1, click_row + 1)
                                 self.flags -= 1
+                            # if you ran out of flags, do nothing
                             elif self.flags == 0:
                                 continue
 
 
 
             # self.print_map()
+            # draw the mine
             self.draw_mine(screen, self.solution_map, self.cover_map)
+
+            #win condition + lose condition checking
             if not first_move:
-                print(f"{self.num_on_mines}, {self.mines}")
+                # print(f"{self.num_on_mines}, {self.mines}")
+                # if we have the same number of flags on mines as mines, check if we won
+                # we won't run a win check if we haven't placed all the flags on the right mines yet
                 if self.num_on_mines == self.mines:
+                    # set our win variable to the result of the check
+                    # the win check checks that all cells other than the marked ones are revealed
                     self.game_won = self.check_win()
 
                 if self.game_won is True:
+                    # if you won the game play the end screen with game won as true
                     time.sleep(0.3)
                     self.play_endscreen(True)
                 if self.game_lost is True:
+                    # if you lost the game play the end screen with game won as false
                     time.sleep(1)
                     self.play_endscreen(False)
             # flip() the display to put work on screen
@@ -477,49 +541,52 @@ class MinesweeperGM:
         pygame.quit()
 
     def check_win(self):
+        # loop through the entire cover map except the gutters
         for i in range(1, len(self.cover_map) - 1):
             for j in range(1, len(self.cover_map[i]) - 1):
+                # if the cell is not revealed and not marked, return False
                 if self.cover_map[i][j] == 0:
                     print("found non-revealed cell")
                     if self.solution_map[i][j] != -1:
                         return False
+        # if every cell is marked and not a mine + every other cell revealed return True
         return True
 
-    def count_value_in_2d_list(self, value, count_list):
-        count = 0
-        for i in range(1, len(count_list) - 1):
-            for j in range(1, len(count_list[i]) - 1):
-                if count_list[i][j] == value:
-                    count += 1
-        return count
-
     def play_endscreen(self, win):
+        # same display thing as before
         icon = pygame.image.load("Ericsweeper_thumb.png")
         pygame.display.set_icon(icon)
         screen = pygame.display.set_mode((1000, 800))
         win_font = pygame.font.Font("JetBrainsMono-VariableFont_wght.ttf", 55)
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                # if the user presses a key, check if it's y or n
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_y:
-                    self.cover_map = np.zeros((self.rows + 2, self.cols + 2))
-                    self.solution_map = np.zeros((self.rows + 2, self.cols + 2))
+                    # if it's y, reset the game and play again
+                    self.cover_map = np.zeros((self.cols + 2, self.rows + 2))
+                    self.solution_map = np.zeros((self.cols + 2, self.rows + 2))
                     self.num_on_mines = 0
                     self.flags = self.mines
                     self.game_won = False
                     self.game_lost = False
                     self.play_game()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+                    # if it's n, quit the game
                     pygame.quit()
                     sys.exit()
 
+            # if this screen is entered with a win, display the win text, else display the lose text
             if win:
                 text = win_font.render("You won!", 1, "white")
             else:
                 text = win_font.render("You lost!", 1, "white")
             screen.blit(text, (500 - text.get_width() / 2, 400 - text.get_height() / 2))
+
+            # display the continue text for the replayable loop
             continue_text = self.info_font.render("Play Again: Y   Quit: N", 1, "white")
             screen.blit(continue_text, (500 - continue_text.get_width() / 2, 600 - continue_text.get_height() / 2))
 
@@ -527,20 +594,19 @@ class MinesweeperGM:
 
 
     def reveal_empty_spaces(self, y, x):
-
-        # Define the directions for adjacent cells (top-left, top, top-right, right, bottom-right, bottom, bottom-left, left)
-
         # Create a deque to hold the locations to be cleared
         to_clear = deque([(y, x)])
-
-        visited = set()  # To keep track of visited cells to avoid infinite loops
-
+        # To keep track of visited cells
+        visited = set()
+        # while our to clear is not empty, meaning we have zeros to clear
         while to_clear:
+            # Pop the leftmost cell from the deque
             curr_y, curr_x = to_clear.popleft()
-
+            # Check if the cell has already been visited
             if (curr_y, curr_x) in visited:
                 continue
 
+            # Add the current cell to the visited set if it is not
             visited.add((curr_y, curr_x))
 
             # Reveal the space at the current position
@@ -555,16 +621,25 @@ class MinesweeperGM:
                     if 0 <= new_y < self.solution_map.shape[0] and 0 <= new_x < self.solution_map.shape[1]:
                         # If the space at the new position is hidden
                         if self.cover_map[new_y][new_x] == 0:
-                            # If it's an empty space or a number, reveal it and add to the deque
+                            # If it's an empty space or a number count, add to the deque
                             if self.solution_map[new_y][new_x] == 0 or self.solution_map[new_y][new_x] > 0:
                                 to_clear.append((new_y, new_x))
 
     def get_calibrated_click_position(self, click_position):
+        # get the x and y of the click
         click_x, click_y = click_position
-        cell_size = self.height / self.rows
-        row = click_x / cell_size - ((1000 - cell_size * self.cols) / 2) / cell_size
-        col = click_y / cell_size
+        if self.rows > self.cols:
+            # if the rows are bigger than the cols, then we have to calibrate the click position with these formulas
+            cell_size = (self.width - 200) / self.rows
+            col = click_y / cell_size - ((800 - cell_size * self.cols) / 2) / cell_size
+            row = click_x / cell_size - ((1000 - cell_size * self.cols) / 2) / cell_size +(0.5*abs(self.rows-self.cols))
+        else:
+            # if the cols are bigger than the rows, then we have to calibrate the click position with these formulas
+            cell_size = self.height / self.cols
+            col = click_y / cell_size
+            row = click_x / cell_size - ((1000 - cell_size * self.cols) / 2) / cell_size - (0.5*abs(self.rows-self.cols))
 
+        # print(f"row: {row}, col: {col}")
         return int(row), int(col)
 
 
@@ -614,6 +689,7 @@ if __name__ == "__main__":
     minesweeper_controller = MinesweeperGM(user_width, user_height, user_num_mines)
     minesweeper_controller.flags = user_num_mines
     minesweeper_controller.mines = user_num_mines
+    minesweeper_controller.play_intro()
     # minesweeper_controller.generate_map(user_width, user_height, user_num_mines)
 
     # <--------------------------- Development Section + Dev Package --------------------------->
@@ -627,4 +703,76 @@ if __name__ == "__main__":
     #
     # # Print the map
     # minesweeper_controller.print_map()
-    minesweeper_controller.play_intro()
+
+
+"""
+Peer Review Section:
+
+Sebastian Plunkett' 24: play tested the early terminal-based version of the generation function
+
+1. seems to be working, but nothing is accounting for creating very odd grids that are just bad to play on
+2. i don't like this terminal interface
+
+My revisions to this:
+
+1. This is what prompted the code you now see in the main method of the code, the inputs are ran through very
+through checks for all kinds of errors. This was critical to ensure the success of the game later on.
+2. I made it into a pygame, Tada!
+
+Leon Zhang '25: Play tested a very early pygame version of the game
+
+1. add an intro video to the game to make it more accessible
+2. there is a bug in your map generation where the bomb that gets moved to somewhere else isn't accounted for.
+
+My revisions to this:
+1. I made an intro video in After Effects in the style of this game. I also added a play_intro() method to the GM class
+2. (note: this bug only existed in my previous way of "generating around the user click," the final version does not use this method
+to avoid users clicking a bomb for their first move). I tweaked the look-around table and realized that I had not excluded
+the gutters from being a place of random placement
+
+Leon Zhang '25 (again): Final playtesting of a pygame version very close to the final version
+
+1. The win condition works half the time
+2. Your reveal_zeros works, but sometimes I still only just see the number I clicked on and nothing else
+3. The mouse click position is calibrated when making a grid that is 14x16
+
+My revisions to this:
+
+1. I reworked the win condition, the previous way of checking had a bug where the grid changes during the middle of its
+checking loop, causing the win to falsely trigger when not all spaces have been revealed yet
+2. I reworked the entire generate_map() function to instead use a "safe_radius" and generate the map after the user's first click
+3. I realized that I needed different functions to calculate the click position based on the grid's dimensions. This is 
+because the alignment of the grid is very different when col > rows vs cols < rows. I implemented this into the calibration function
+with conditionals
+
+Ming Qin '25: Playtesting the Final Version:
+
+This is more of an actual playtest than basic feedback. I said nothing else but to play the game. Ming was able to
+play the game through with he proper interface and win. Furthermore, he was able to play another game without restarting
+due to the new menu feature I implemented in the end screen.
+
+Tye Chokephaibulkit '24: Long-term playtesting throughout development
+
+1. found various small errors throughout the development process since he played many of my checkpoint versions
+2. the most important bug found was in one of the early pygame versions where I put in the col and row index in the
+wrong order so the whole map was actually messed up but it looked perfect when testing with squares.
+
+My revisions to this:
+
+1. fixed all the tiny errors found along the way
+2. This was a great save, I would have never found this bug if it weren't for Tye's playtesting. I fixed it by putting
+the indices in the right place. 
+
+My Choate Singing Teacher (yes I sing): Adult playtesting
+
+See, this is the "game of your elders," right? So I thought it would be a good idea to have an adult playtest the game.
+It turned out that my singing teacher had played this game a lot during his childhood, so I was able to get feedback on 
+the final version of the game and how everything felt. He really liked it, and in fact after seeing how this works, my
+singing teacher wanted to learn some coding too!
+
+And, finally, credit where credit's due: Google Minesweeper!
+
+I used Google Minesweeper as sort of a reference benchmark for my game. Though there was no code, I did get how big my 
+"safe_radius" should be from there.
+
+"""
