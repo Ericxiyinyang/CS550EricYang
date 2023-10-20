@@ -418,13 +418,18 @@ class MinesweeperGM:
         # draw the info text about how many flags are left
         screen.blit(self.info_font.render("Flags:", 1, "white"), (10, 30))
 
-        # color map the flag number so it changes color when running low
+        # color map the flag number, so it changes color when running low
         if self.flags > 6:
             screen.blit(self.info_font.render(str(self.flags), 1, "green"), (10, 50))
         elif self.flags > 3:
             screen.blit(self.info_font.render(str(self.flags), 1, "yellow"), (10, 50))
         else:
             screen.blit(self.info_font.render(str(self.flags), 1, "red"), (10, 50))
+
+        screen.blit(self.info_font.render("LClick:", 1, "white"), (10, 500))
+        screen.blit(self.info_font.render("REVEAL", 1, "white"), (10, 520))
+        screen.blit(self.info_font.render("RClick", 1, "red"), (10, 550))
+        screen.blit(self.info_font.render("FLAG", 1, "red"), (10, 570))
 
         # refresh the display
         pygame.display.update()
