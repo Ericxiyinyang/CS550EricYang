@@ -26,7 +26,7 @@ shrink_factor = 1 + math.sqrt(5) / 2
 
 # turtle setup
 turtle.speed(0)
-turtle.tracer(100, 0)
+turtle.tracer(300, 0)
 
 # initialize 800x800 turtle tk window
 screen = turtle.Screen()
